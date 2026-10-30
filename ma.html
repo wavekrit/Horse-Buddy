@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HORSE BUDDY - ตลาดซื้อขายม้าและอุปกรณ์ครบวงจร</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            hbOrange: '#EA580C',
+            hbOrangeHover: '#C2410C',
+            hbGold: '#FACC15',
+            hbDark: '#121212'
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Leaflet Map สำหรับปักหมุดที่อยู่คำนวณระยะทางจัดส่ง -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="ีCuma.css" />
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+      background-color: #18181b;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-zinc-900 text-white select-none">
+
+  <!-- ==================== แถบนำทางด้านบน (Navbar) ==================== -->
+  <header class="fixed top-0 inset-x-0 z-40 bg-black/80 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <!-- โลโก้ HORSE BUDDY (เชื่อมกับไฟล์ Cuma.css) -->
+      <div class="hb-logo-wrapper shrink-0">
+        <a href="#top" class="hb-logo-link group">
+          <div class="hb-logo-text-box">
+            <span class="hb-logo-title group-hover:text-hbGold transition">HORSE</span>
+            <span class="hb-logo-subtitle group-hover:text-hbOrange transition">BUDDY</span>
+          </div>
+          <div class="hb-logo-img-box">
+            <img src="img/icon/hoser icon.png" onerror="this.style.display='none'" alt="Logo" class="hb-logo-img" />
+          </div>
+        </a>
+      </div>
+
+      <!-- ช่องค้นหาตรงกลาง (รองรับการค้นหาสินค้า และการพิมพ์ CODENAME:UMA.ADMIN) -->
+      <div class="flex-1 max-w-xl mx-2">
+        <div class="relative flex items-center">
+          <input
+            id="globalSearchInput"
+            type="text"
+            placeholder="ค้นหาสายพันธุ์ม้า, อาหารม้า, อุปกรณ์เสริม..."
+            class="w-full bg-white text-zinc-900 rounded-full py-2 sm:py-2.5 pl-5 pr-12 text-xs sm:text-sm font-medium border-2 border-hbOrange focus:outline-none shadow-md"
+          />
+          <button
+            type="button"
+            onclick="handleGlobalSearch()"
+            class="absolute right-4 text-zinc-800 hover:text-hbOrange transition"
+            title="ค้นหา"
+          >
+            <i class="fa-solid fa-magnifying-glass text-base sm:text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- เมนูฝั่งขวา: ตะกร้าสินค้า, กระดิ่งแจ้งเตือน, ปุ่ม Login / โปรไฟล์ผู้ใช้ -->
+      <div class="flex items-center gap-3 shrink-0">
+        <!-- ปุ่มติดต่อ LINE (วางหน้าปุ่มตะกร้าสินค้า) -->
+          <button
+            type="button"
+            onclick="openLineContactModal()"
+            class="relative p-2 mr-1 sm:mr-2 text-white hover:text-green-400 transition"
+            title="ติดต่อแอดมินผ่าน LINE"
+          >
+            <i class="fa-brands fa-line text-[26px] sm:text-[28px]"></i>
+          </button>
+        <!-- ปุ่มตะกร้าสินค้า -->
+        <button
+          onclick="openCartModal()"
+          class="relative w-10 h-10 rounded-full bg-white/10 hover:bg-hbOrange text-white flex items-center justify-center transition"
+          title="ตะกร้าสินค้า"
+        >
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span id="cartCountBadge" class="hidden absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-extrabold flex items-center justify-center">
+            0
+          </span>
+        </button>
+
+        <!-- ปุ่มกระดิ่งแจ้งเตือนสถานะคำสั่งซื้อ -->
+        <button
+          onclick="openNotificationsModal()"
+          class="relative w-10 h-10 rounded-full bg-white/10 hover:bg-hbOrange text-hbGold hover:text-white flex items-center justify-center transition"
+          title="การแจ้งเตือนและติดตามคำสั่งซื้อ"
+        >
+          <i class="fa-solid fa-bell text-lg"></i>
+          <span id="notifCountBadge" class="hidden absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-extrabold flex items-center justify-center">
+            0
+          </span>
+        </button>
+
+        <!-- กล่องปุ่ม Login / Sign in (แสดงเมื่อยังไม่ได้เข้าสู่ระบบ) -->
+        <div id="guestAuthButtons" class="flex items-center gap-2">
+          <button
+            onclick="openAuthModal('login')"
+            class="px-5 py-1.5 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white font-bold text-xs sm:text-sm transition shadow"
+          >
+            Login
+          </button>
+          <button
+            onclick="openAuthModal('register')"
+            class="px-5 py-1.5 rounded-full bg-black hover:bg-zinc-800 text-white border border-white/25 font-bold text-xs sm:text-sm transition"
+          >
+            Sign in
+          </button>
+        </div>
+
+        <!-- กล่องแสดงโปรไฟล์ผู้ใช้งาน (แสดงเมื่อเข้าสู่ระบบแล้ว) -->
+        <div id="userProfileMenu" class="hidden flex items-center gap-2.5">
+          <button
+            onclick="openOrdersHistoryModal()"
+            class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-amber-300 transition"
+          >
+            <i class="fa-solid fa-truck-fast"></i> ติดตามคำสั่งซื้อ
+          </button>
+          <div onclick="openProfileModal()" class="flex items-center gap-2 cursor-pointer bg-white/10 hover:bg-white/20 rounded-full py-1 pl-1 pr-3 transition">
+            <img
+              id="navUserAvatar"
+              src="https://api.dicebear.com/7.x/bottts/svg?seed=HorseBuddy"
+              alt="Avatar"
+              class="w-8 h-8 rounded-full object-cover border border-hbGold bg-zinc-800"
+            />
+            <span id="navUsername" class="text-xs sm:text-sm font-bold text-white max-w-[110px] truncate">ผู้ใช้งาน</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== ส่วนแบนเนอร์หลัก (Hero Section) ==================== -->
+  <section id="top" class="relative h-[78vh] w-full overflow-hidden bg-black pt-16">
+    <img
+      src="img/pcjvdwiel-horse-3765847.jpg"
+      alt="Hero Horse"
+      class="w-full h-full object-cover object-center brightness-75"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-zinc-900"></div>
+    <div class="absolute inset-x-0 bottom-14 text-center px-4">
+      <h1 class="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-[0.15em] text-white drop-shadow-lg uppercase">
+        LOOKING FOR
+      </h1>
+      <h2 class="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-[0.15em] text-white mt-2 drop-shadow-lg uppercase">
+        NEW BUDDY
+      </h2>
+    </div>
+  </section>
+
+  <!-- ==================== เนื้อหาหลักแสดงรายการม้าและสินค้าทั้งหมด ==================== -->
+  <main class="max-w-7xl mx-auto w-full px-4 sm:px-8 py-12 space-y-16">
+    <!-- ==================== ส่วนเนื้อหา: ทำไมถึงต้องม้า & ประวัติฟาร์มของเรา HB (กลิ้งเมาส์สลับได้) ==================== -->
+    <section
+      id="hbHistoryStorySection"
+      class="relative bg-gradient-to-b from-[#6b6b6e]/40 via-[#2a2a2d]/80 to-[#141416] rounded-[36px] border border-white/10 p-6 sm:p-10 shadow-2xl overflow-hidden select-none"
+      title="กลิ้งลูกกลิ้งเมาส์เพื่อสลับดู ทำไมถึงต้องม้า / ประวัติฟาร์มของเรา"
+    >
+      <!-- แถบขีดสีขาวด้านขวาสำหรับบอกสไลด์ปัจจุบัน (คลิกสลับได้ด้วย) -->
+      <div class="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2.5">
+        <button
+          type="button"
+          id="histIndicator0"
+          onclick="switchHistorySlide(0)"
+          class="w-2.5 h-10 rounded-full bg-white shadow-lg transition-all duration-300"
+          title="ทำไมถึงต้องม้า"
+        ></button>
+        <button
+          type="button"
+          id="histIndicator1"
+          onclick="switchHistorySlide(1)"
+          class="w-2.5 h-4 rounded-full bg-white/30 hover:bg-white/60 transition-all duration-300"
+          title="ประวัติฟาร์มของเรา HB"
+        ></button>
+      </div>
+
+      <!-- สไลด์ที่ 1: ทำไมถึงต้องม้า (ตามภาพที่ 1) -->
+      <div id="historySlide0" class="space-y-8 pr-4 sm:pr-8 transition-opacity duration-300">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center">
+          <!-- รูปคาวบอยขี่ม้าด้านซ้าย -->
+          <div class="md:col-span-4">
+            <div class="aspect-square rounded-[28px] overflow-hidden shadow-xl border border-white/15 bg-zinc-800">
+              <img
+                src="img/witchfiction-cowgirl-419084_1920.jpg"
+                alt="ทำไมถึงต้องม้า"
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          <!-- ข้อความทำไมถึงต้องม้าด้านขวา -->
+          <div class="md:col-span-8 space-y-3 text-white">
+            <h2 class="text-2xl sm:text-4xl font-extrabold tracking-wide">ทำไมถึงต้องม้า</h2>
+            <p class="text-sm sm:text-lg text-gray-100 leading-relaxed font-medium">
+              &nbsp;&nbsp;&nbsp;ความเป็นมาในการเลี้ยงม้าเชื่อกันว่าเกิดขึ้นราว 4,000 ปี ก่อนคริสตกาล
+              ในอดีตใช้ในการเป็นพาหนะ ช่วยในการเดินทาง แข่งขันเป็นกีฬา จนถึงการเป็นสัตว์ขี่ออกรบ
+              นั้นจึงทำให้ม้าเป็นสัญลักษณ์ของความ
+              <br />
+              <span class="font-bold text-white">”กล้าหาญ แข็งแกร่ง สง่างาม มีไหวพริบ”</span>
+              <br />
+              ม้าเป็นสัตว์ที่ฉลาด แต่ละตัวก็จะมีนิสัยที่ต่างกันออกไป และแต่ละสายพันธุ์ก็จะมีคามพิเศษเฉพาะสายพันธุ์นั้นๆ
+            </p>
+          </div>
+        </div>
+
+        <!-- แถวรูปม้า 4 ภาพด้านล่าง -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+          <div class="aspect-square rounded-[24px] overflow-hidden shadow-lg bg-zinc-800">
+            <img
+              src="img/uma1.jpg"
+              alt="Horse 1"
+              class="w-full h-full object-cover hover:scale-105 transition duration-500"
+            />
+          </div>
+          <div class="aspect-square rounded-[24px] overflow-hidden shadow-lg bg-zinc-800">
+            <img
+              src="img/calstone-calstone-light-o.gif"
+              alt="Horse 2"
+              class="w-full h-full object-cover grayscale contrast-125 hover:scale-105 transition duration-500"
+            />
+          </div>
+          <div class="aspect-square rounded-[24px] overflow-hidden shadow-lg bg-zinc-800">
+            <img
+              src="img/PrincessTwilightSparkle.png"
+              alt="Horse 3"
+              class="w-full h-full object-cover hover:scale-105 transition duration-500"
+            />
+          </div>
+          <div class="aspect-square rounded-[24px] overflow-hidden shadow-lg bg-zinc-800">
+            <img
+              src="img/dendoktoor-horse-7201031_1920.jpg"
+              alt="Horse 4"
+              class="w-full h-full object-cover hover:scale-105 transition duration-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- สไลด์ที่ 2: ประวัติฟาร์มของเรา HB (ตามภาพที่ 2) -->
+      <div id="historySlide1" class="hidden pr-4 sm:pr-8 transition-opacity duration-300">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center">
+          <!-- รูปพ่อใหญ่ช้าณย์ เม็ก คาวบอยขาวดำด้านซ้าย -->
+          <div class="md:col-span-4">
+            <div class="aspect-[3/4] rounded-[28px] overflow-hidden shadow-2xl border border-white/15 bg-zinc-900">
+              <img
+                src="img/Gritty Western Outlaw Portrait.png"
+                alt="ประวัติฟาร์มของเรา HB"
+                class="w-full h-full object-cover grayscale contrast-125"
+              />
+            </div>
+          </div>
+
+          <!-- ข้อความประวัติฟาร์มของเรา HB ด้านขวา -->
+          <div class="md:col-span-8 space-y-3 text-white">
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-[#F59E0B] tracking-wide">
+              ประวัติฟาร์มของเรา HB
+            </h2>
+            <p class="text-sm sm:text-lg text-gray-100 leading-relaxed font-medium">
+              &nbsp;&nbsp;&nbsp;ความเป็นมาของฟาร์มเราเริ่มเมื่อต้นเมื่อ 89 ปีก่อน เมื่อพ่อใหญ่ ช้าณย์ เม็ก
+              คาวบอยหนุ่มไฟแรงจากแดนเท็กซัต ได้มีไอเดียอยากค้าขายม้าในต่างแดน
+              ภรรยาพ่อใหญ่ตอนนั้น แม่ลำดวน คนไทยที่เดินทางไปค้าขายกับเรือสำเภาได้พบรักกับพ่อใหญ่
+              จึงได้เสนอไอเดียกลับไปทำฟาร์มม้าในไทยโดยนำสายพันธุ์จากเท็กซัตไปลองขายลองผสมสายพันธุ์
+              แล้วขายม้าสายพันธุ์ดีมีคุณภาพให้เจ้าขุนมูลนาย ณ ตอนนั้นเนื่องจากเป็นม้าสายพันธุ์ต่างประเทศจึงได้รับความนิยมอย่างล้นหลาม
+              และพัฒนากิจการมาจนถึงปัจจุบัน ทางฟาร์มเราได้ขออนุญาตแบบ มฐฟ. 1 เรียบร้อย
+              ท่านจึงมั่นใจได้เรายินดีให้บริการให้ม้าให้ท่านถูกใจเป็นคู่หูของท่าน
+            </p>
+            <div class="pt-2 text-sm sm:text-lg font-bold text-white leading-relaxed">
+              <p>คำเตือนจากฝ่ายรับเรื่องแอดมินโกชิป :</p>
+              <p>ม้าให้ขี่ อย่าดูด มันถีบขาคู่ได้ เป็นม้าตัว ไม่ใช่เม็ด เด้อจ๊ะ</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. หมวดหมู่ RACING HORSE (พร้อมปุ่มเลื่อน < > และจุดบอกหน้า) -->
+    <section id="sectionRacing">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-white uppercase">RACING HORSE</h2>
+          <p class="text-xs sm:text-sm text-gray-400">ม้าแข่งสายพันธุ์แท้ความเร็วสูง พร้อมใบรับรองสายเลือดและสุขภาพ</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            onclick="changeCatalogPage('racing', -1)"
+            class="w-10 h-10 rounded-full bg-black/80 hover:bg-hbOrange text-white border border-white/15 flex items-center justify-center transition shadow"
+            title="หน้าก่อนหน้า"
+          >
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <button
+            type="button"
+            onclick="changeCatalogPage('racing', 1)"
+            class="w-10 h-10 rounded-full bg-black/80 hover:bg-hbOrange text-white border border-white/15 flex items-center justify-center transition shadow"
+            title="หน้าถัดไป"
+          >
+            <i class="fa-solid fa-chevron-right text-sm"></i>
+          </button>
+        </div>
+      </div>
+      <div id="racingHorseGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      <div id="racingDots" class="flex justify-center items-center gap-2.5 mt-6"></div>
+    </section>
+
+    <!-- 2. หมวดหมู่ SHOW HORSE (พร้อมปุ่มเลื่อน < > และจุดบอกหน้า) -->
+    <section id="sectionShow">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-white uppercase">SHOW HORSE</h2>
+          <p class="text-xs sm:text-sm text-gray-400">ม้าสวยงามและม้าโชว์ศิลปะการบังคับม้าระดับสากล</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            onclick="changeCatalogPage('show', -1)"
+            class="w-10 h-10 rounded-full bg-black/80 hover:bg-hbOrange text-white border border-white/15 flex items-center justify-center transition shadow"
+            title="หน้าก่อนหน้า"
+          >
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <button
+            type="button"
+            onclick="changeCatalogPage('show', 1)"
+            class="w-10 h-10 rounded-full bg-black/80 hover:bg-hbOrange text-white border border-white/15 flex items-center justify-center transition shadow"
+            title="หน้าถัดไป"
+          >
+            <i class="fa-solid fa-chevron-right text-sm"></i>
+          </button>
+        </div>
+      </div>
+      <div id="showHorseGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      <div id="showDots" class="flex justify-center items-center gap-2.5 mt-6"></div>
+    </section>
+
+    <!-- 3. หมวดหมู่ อาหารสัตว์ (HORSE FEED) (พร้อมปุ่มเลื่อน < > และจุดบอกหน้า) -->
+    <section id="sectionFeed">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="w-2 h-8 rounded-full bg-hbOrange inline-block"></span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-hbOrange uppercase">อาหารสัตว์ (HORSE FEED)</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-hbOrange/80 pl-4 mt-1">โภชนาการคุณภาพสูงสำหรับม้าแข่งและม้าสวยงาม</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            onclick="changeCatalogPage('feed', -1)"
+            class="w-10 h-10 rounded-full bg-black/80 hover:bg-hbOrange text-white border border-white/15 flex items-center justify-center transition shadow"
+            title="หน้าก่อนหน้า"
+          >
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <button
+            type="button"
+            onclick="changeCatalogPage('feed', 1)"
+            class="w-10 h-10 rounded-full bg-black/80 hover:bg-hbOrange text-white border border-white/15 flex items-center justify-center transition shadow"
+            title="หน้าถัดไป"
+          >
+            <i class="fa-solid fa-chevron-right text-sm"></i>
+          </button>
+        </div>
+      </div>
+      <div id="feedProductGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      <div id="feedDots" class="flex justify-center items-center gap-2.5 mt-6"></div>
+    </section>
+
+    <!-- 4. หมวดหมู่ อุปกรณ์เสริมสำหรับม้า (HORSE ACCESSORIES) (พร้อมปุ่มเลื่อน < > และจุดบอกหน้า) -->
+    <section id="sectionEquipment">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="w-2 h-8 rounded-full bg-hbOrange inline-block"></span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-hbOrange uppercase">อุปกรณ์เสริมสำหรับม้า (HORSE ACCESSORIES)</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-hbOrange/80 pl-4 mt-1">อุปกรณ์ขี่ม้าและดูแลม้าเกรดพรีเมียม</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            onclick="changeCatalogPage('equipment', -1)"
+            class="w-10 h-10 rounded-full bg-black/80 hover:bg-hbOrange text-white border border-white/15 flex items-center justify-center transition shadow"
+            title="หน้าก่อนหน้า"
+          >
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <button
+            type="button"
+            onclick="changeCatalogPage('equipment', 1)"
+            class="w-10 h-10 rounded-full bg-black/80 hover:bg-hbOrange text-white border border-white/15 flex items-center justify-center transition shadow"
+            title="หน้าถัดไป"
+          >
+            <i class="fa-solid fa-chevron-right text-sm"></i>
+          </button>
+        </div>
+      </div>
+      <div id="equipmentProductGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      <div id="equipmentDots" class="flex justify-center items-center gap-2.5 mt-6"></div>
+    </section>
+
+  </main>
+
+  <!-- ==================== ส่วนท้ายเว็บไซต์ (Footer) ==================== -->
+  <footer class="bg-black border-t border-white/10 py-8 px-4 sm:px-8 text-center text-xs text-gray-400">
+    <p class="font-bold text-white text-sm mb-1">HORSE BUDDY FARM & LOGISTICS (KHON KAEN)</p>
+    <p>© 2026 HORSE BUDDY. ตลาดซื้อขายม้าแข่ง ม้าสวยงาม อาหารม้า และอุปกรณ์ครบวงจร</p>
+  </footer>
+
+  <!-- ==================== 1. หน้าต่างดูรายละเอียดสินค้าและม้า (Product Detail Modal) ==================== -->
+  <div id="productDetailModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="relative w-full max-w-4xl bg-zinc-900 border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl my-8">
+      <button onclick="closeModal('productDetailModal')" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-hbOrange text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <!-- รูปภาพหลักและรูปย่อย -->
+        <div class="md:col-span-5 space-y-3">
+          <div class="aspect-square rounded-2xl overflow-hidden bg-black border border-white/10">
+            <img id="detailMainImage" src="" alt="Product" class="w-full h-full object-cover" />
+          </div>
+          <div id="detailThumbnails" class="grid grid-cols-4 gap-2"></div>
+        </div>
+
+        <!-- ข้อมูลสินค้า ตัวเลือกพ่อพันธุ์/แม่พันธุ์ และปุ่มสั่งซื้อ -->
+        <div class="md:col-span-7 space-y-4">
+          <div>
+            <span id="detailCategoryBadge" class="px-3 py-0.5 rounded-full bg-hbOrange/20 text-hbOrange text-xs font-bold uppercase">RACING HORSE</span>
+            <h3 id="detailTitle" class="text-2xl sm:text-3xl font-extrabold text-white mt-1"></h3>
+            <div class="flex items-center gap-3 mt-1 text-sm">
+              <span id="detailRatingStars" class="text-hbGold font-bold">★★★★★ (5.0)</span>
+              <span id="detailStockBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold"></span>
+            </div>
+          </div>
+
+          <p id="detailPriceText" class="text-2xl sm:text-3xl font-extrabold text-hbOrange"></p>
+
+          <!-- กล่องเลือกเพศม้า พ่อพันธุ์ / แม่พันธุ์ (แสดงเฉพาะม้า) -->
+          <div id="detailHorseVariantSection" class="space-y-3 bg-black/40 p-4 rounded-2xl border border-white/10">
+            <label class="block text-xs font-bold text-gray-300">เลือกประเภทม้า (พ่อพันธุ์ / แม่พันธุ์):</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                id="variantBtnSire"
+                onclick="selectHorseVariant('sire')"
+                class="py-2 px-4 rounded-xl font-bold text-sm border-2 border-hbOrange bg-hbOrange text-white transition"
+              >
+                พ่อพันธุ์ (Sire)
+              </button>
+              <button
+                type="button"
+                id="variantBtnDam"
+                onclick="selectHorseVariant('dam')"
+                class="py-2 px-4 rounded-xl font-bold text-sm border-2 border-white/20 bg-transparent text-gray-300 hover:border-hbGold transition"
+              >
+                แม่พันธุ์ (Dam)
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs text-gray-300 pt-1">
+              <div>ชื่อม้า: <strong id="detailHorseName" class="text-white"></strong></div>
+              <div>อายุ: <strong id="detailHorseAge" class="text-white"></strong></div>
+              <div class="col-span-2">สุขภาพ: <strong id="detailHorseHealth" class="text-emerald-400"></strong></div>
+            </div>
+          </div>
+
+          <!-- คำอธิบายสินค้า -->
+          <div class="bg-black/30 p-3.5 rounded-2xl border border-white/10">
+            <h4 class="text-xs font-bold text-hbGold mb-1">รายละเอียดและจุดเด่น</h4>
+            <p id="detailDescription" class="text-xs sm:text-sm text-gray-200 leading-relaxed"></p>
+          </div>
+
+          <!-- ประวัติวัคซีน (แสดงเฉพาะม้า) -->
+          <div id="detailVaccineBox" class="bg-black/30 p-3.5 rounded-2xl border border-white/10">
+            <h4 class="text-xs font-bold text-hbGold mb-1">ประวัติการฉีดวัคซีนและใบรับรอง</h4>
+            <p id="detailVaccineText" class="text-xs text-gray-300 leading-relaxed"></p>
+          </div>
+
+          <!-- ปรับจำนวนที่ต้องการซื้อ -->
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-sm font-bold text-gray-300">จำนวนที่ต้องการ:</span>
+            <div class="flex items-center gap-3 bg-black/50 border border-white/20 rounded-full px-3 py-1">
+              <button type="button" onclick="adjustDetailQty(-1)" class="w-7 h-7 rounded-full bg-white/10 hover:bg-hbOrange text-white font-bold">-</button>
+              <span id="detailBuyQty" class="font-extrabold text-base w-8 text-center">1</span>
+              <button type="button" onclick="adjustDetailQty(1)" class="w-7 h-7 rounded-full bg-white/10 hover:bg-hbOrange text-white font-bold">+</button>
+              <span id="detailUnitLabel" class="text-xs text-gray-400 pr-1">ตัว</span>
+            </div>
+          </div>
+
+          <!-- ปุ่มเพิ่มลงตะกร้า & ซื้อทันที (BUY) -->
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <button
+              type="button"
+              onclick="addCurrentDetailToCart()"
+              class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-extrabold text-sm sm:text-base transition flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-cart-plus"></i> เพิ่มลงตะกร้า
+            </button>
+            <button
+              type="button"
+              onclick="buyNowFromDetail()"
+              class="py-3 rounded-2xl bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-sm sm:text-base transition shadow-lg"
+            >
+              BUY (ซื้อทันที)
+            </button>
+          </div>
+
+          <!-- รีวิวจากลูกค้า -->
+          <div class="pt-3 border-t border-white/10">
+            <h4 class="text-xs font-bold text-hbGold mb-2">รีวิวจากผู้ซื้อจริง</h4>
+            <div id="detailReviewsList" class="space-y-2 max-h-36 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. หน้าต่างตะกร้าสินค้า (Cart Modal) ==================== -->
+  <div id="cartModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-xl bg-zinc-900 border border-white/15 rounded-3xl p-6 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 class="text-xl font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-cart-shopping text-hbOrange"></i> ตะกร้าสินค้าของคุณ
+        </h3>
+        <button onclick="closeModal('cartModal')" class="w-8 h-8 rounded-full bg-white/10 hover:bg-hbOrange flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div id="cartItemsContainer" class="flex-1 overflow-y-auto space-y-3 py-4 pr-1"></div>
+
+      <div class="border-t border-white/10 pt-4 space-y-3">
+        <div class="flex items-center justify-between text-lg font-extrabold">
+          <span>ยอดรวมสินค้าที่เลือก:</span>
+          <span id="cartTotalAmount" class="text-hbOrange text-2xl">0 ฿</span>
+        </div>
+        <button
+          type="button"
+          onclick="proceedCartToCheckout()"
+          class="w-full py-3 rounded-2xl bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-base transition shadow-lg"
+        >
+          ดำเนินการชำระเงิน
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 3. หน้าต่างชำระเงิน 3 ขั้นตอน (Checkout Modal ตามภาพต้นฉบับ) ==================== -->
+  <div id="checkoutModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="relative w-full max-w-lg bg-white text-zinc-900 rounded-[36px] p-6 sm:p-8 shadow-2xl my-8">
+      <button
+        type="button"
+        onclick="closeModal('checkoutModal')"
+        class="absolute top-5 right-5 w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 text-zinc-700 flex items-center justify-center transition"
+      >
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <!-- ==================== STEP 1: ตัวเลือกจัดส่ง ==================== -->
+      <div id="checkoutStep1">
+        <h3 class="text-2xl sm:text-3xl font-extrabold text-center text-black mb-6">ตัวเลือกจัดส่ง</h3>
+
+        <div class="space-y-4">
+          <!-- แถวที่ 1: 1.การจัดส่ง (ล็อกไว้ให้ตรวจสอบ) & 2.ตัวเลือกการขนส่ง (บก/อากาศ หรือบังคับอากาศ) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs sm:text-sm font-extrabold text-black mb-1.5">1.การจัดส่ง</label>
+              <input
+                id="chkCountryScope"
+                type="text"
+                readonly
+                value="ในประเทศ"
+                title="ล็อกตามตำแหน่งหมุดที่ปักไว้ในโปรไฟล์"
+                class="w-full bg-white border border-gray-400 rounded-2xl py-2.5 px-4 text-xs sm:text-sm text-zinc-700 font-semibold cursor-not-allowed select-none focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs sm:text-sm font-extrabold text-black mb-1.5">2.ตัวเลือกการขนส่ง</label>
+              <div class="relative">
+                <select
+                  id="chkTransportMode"
+                  onchange="handleTransportModeChange()"
+                  class="w-full appearance-none bg-white border border-gray-400 rounded-2xl py-2.5 pl-3.5 pr-8 text-xs sm:text-sm text-zinc-800 font-semibold focus:outline-none focus:border-hbOrange cursor-pointer truncate"
+                >
+                  <option value="land">จัดส่งโดยรถขนส่งม้า HB</option>
+                  <option value="air">จัดส่งโดยรถขนส่งม้า Air Horse One Boeing 727</option>
+                </select>
+                <span id="chkTransportArrow" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-black font-extrabold text-xs">
+                  v
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- แถวที่ 2: 3.ตัวเลือกคอกม้าขนส่ง & 4.ระยะทางจัดส่ง (ล็อกตามหมุด) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs sm:text-sm font-extrabold text-black mb-1.5">3.ตัวเลือกคอกม้าขนส่ง</label>
+              <div class="relative">
+                <select
+                  id="chkStallType"
+                  onchange="updateCheckoutCalculations()"
+                  class="w-full appearance-none bg-white border border-gray-400 rounded-2xl py-2.5 pl-3.5 pr-8 text-xs sm:text-sm text-zinc-800 font-semibold focus:outline-none focus:border-hbOrange cursor-pointer truncate"
+                >
+                  <option value="shared">รวมคอก (3 ตัวต่อคอก - ราคาประหยัด)</option>
+                  <option value="single">แยกคอก (1 ตัวต่อคอก - ราคากลาง)</option>
+                  <option value="vip">VIP (ส่งเฉพาะม้าลูกค้าเท่านั้น)</option>
+                </select>
+                <span id="chkStallArrow" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-black font-extrabold text-xs">
+                  v
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs sm:text-sm font-extrabold text-black">4.ระยะทางจัดส่ง</label>
+                <button type="button" onclick="jumpToProfileAddressPin()" class="text-[11px] text-hbOrange hover:underline font-bold">
+                  📍 เปลี่ยนหมุด
+                </button>
+              </div>
+              <input
+                id="chkDistanceDisplay"
+                type="text"
+                readonly
+                value="0 KM."
+                class="w-full bg-white border border-gray-400 rounded-2xl py-2.5 px-4 text-xs sm:text-sm text-zinc-700 font-semibold cursor-not-allowed select-none focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <!-- แถวที่ 3: 5.ที่อยู่ของคุณ (แก้ไขได้) -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs sm:text-sm font-extrabold text-black">5.ที่อยู่ของคุณ</label>
+              <span id="chkNoPinWarning" class="hidden text-[11px] text-red-600 font-bold">
+                *ยังไม่ได้ปักหมุดระยะทาง <button type="button" onclick="jumpToProfileAddressPin()" class="underline">คลิกเพื่อไปปักหมุด</button>
+              </span>
+            </div>
+            <textarea
+              id="chkEditableAddress"
+              rows="2"
+              placeholder="กรอกหรือแก้ไขรายละเอียดที่อยู่สำหรับจัดส่ง..."
+              class="w-full bg-white border border-gray-400 rounded-2xl py-2.5 px-4 text-xs sm:text-sm text-zinc-800 focus:outline-none focus:border-hbOrange resize-none"
+            ></textarea>
+          </div>
+
+          <!-- กล่องติ๊กยอมรับเงื่อนไข -->
+          <label class="flex items-start gap-2.5 pt-1 cursor-pointer select-none">
+            <input id="chkAgreeShippingTerms" type="checkbox" class="mt-1 w-4 h-4 accent-hbOrange rounded cursor-pointer shrink-0" />
+            <span class="text-xs text-zinc-600 leading-relaxed">
+              ข้าพเจ้าได้อ่านและตรวจสอบข้อมูลเรียบร้อยแล้วหากเกิดการผิดพลาดในการจัดส่งข้าพเจ้ายินดีรับผิดชอบความเสียหายที่เกิดขึ้นทั้งหมด
+            </span>
+          </label>
+
+          <p id="chkStep1Error" class="text-xs text-red-600 font-bold text-center hidden"></p>
+
+          <!-- ปุ่ม ยกเลิก & ดำเนินการต่อ -->
+          <div class="grid grid-cols-2 gap-4 pt-3">
+            <button
+              type="button"
+              onclick="closeModal('checkoutModal')"
+              class="w-full py-3 rounded-2xl bg-zinc-400 hover:bg-zinc-500 text-white font-extrabold text-base sm:text-lg transition shadow"
+            >
+              ยกเลิก
+            </button>
+            <button
+              type="button"
+              onclick="goToCheckoutStep2()"
+              class="w-full py-3 rounded-2xl bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-base sm:text-lg transition shadow-lg"
+            >
+              ดำเนินการต่อ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 2: เลือกช่องทางชำระเงิน ==================== -->
+      <div id="checkoutStep2" class="hidden">
+        <h3 class="text-2xl sm:text-3xl font-extrabold text-center text-black mb-6">ชำระเงิน</h3>
+
+        <div class="space-y-4">
+          <div onclick="selectPaymentMethodOption('qr')" class="cursor-pointer rounded-2xl p-3 transition border border-transparent hover:bg-gray-50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-[#003D6B] text-white flex items-center justify-center font-bold text-sm shadow">
+                  <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <span class="font-bold text-base sm:text-lg text-black tracking-wide">QR PROMPTPAY</span>
+              </div>
+              <div id="radioDotQr" class="w-6 h-6 rounded-full border-4 border-green-500 bg-white"></div>
+            </div>
+
+            <div id="qrCodePreviewBox" class="mt-4 flex flex-col items-center justify-center py-2">
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=HORSE-BUDDY-PROMPTPAY"
+                alt="QR PromptPay"
+                class="w-48 h-48 sm:w-52 sm:h-52 object-contain border border-gray-200 p-2 rounded-xl bg-white shadow-xs"
+              />
+            </div>
+          </div>
+
+          <div onclick="selectPaymentMethodOption('bank')" class="cursor-pointer rounded-2xl p-3 transition border border-transparent hover:bg-gray-50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-sky-600 text-white flex items-center justify-center text-sm shadow">
+                  <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <span class="font-bold text-base sm:text-lg text-black">โมบายแบงก์กิ้ง</span>
+              </div>
+              <div id="radioDotBank" class="w-6 h-6 rounded-full border-4 border-gray-400 bg-white"></div>
+            </div>
+
+            <div id="bankInfoPreviewBox" class="hidden mt-3 bg-gray-100 rounded-2xl p-3.5 text-xs sm:text-sm text-zinc-800 space-y-1">
+              <p class="font-bold text-zinc-900">ธนาคารกสิกรไทย (K-BANK)</p>
+              <p>เลขที่บัญชี: <strong class="text-hbOrange text-base">099-8-88777-6</strong></p>
+              <p>ชื่อบัญชี: <strong>บจก. ฮอร์ส บัดดี้ ฟาร์ม (HORSE BUDDY)</strong></p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl p-3 opacity-75 cursor-not-allowed select-none">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-blue-900/20 text-blue-700 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-credit-card"></i>
+                </div>
+                <div>
+                  <span class="font-bold text-base sm:text-lg text-black">เพิ่มบัตรเครดิต/เดบิต</span>
+                  <span class="text-xs sm:text-sm font-bold text-red-600 ml-1">(พร้อมใช้งานในอนาคต)</span>
+                </div>
+              </div>
+              <div class="w-6 h-6 rounded-full border-4 border-gray-400 bg-gray-200"></div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="button" onclick="backToCheckoutStep1()" class="w-1/3 py-3 rounded-2xl bg-gray-200 hover:bg-gray-300 text-zinc-800 font-extrabold text-sm sm:text-base transition">
+              ย้อนกลับ
+            </button>
+            <button type="button" onclick="goToCheckoutStep3()" class="w-2/3 py-3 rounded-2xl bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-base sm:text-lg transition shadow-lg">
+              ดำเนินการต่อ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 3: สรุปคำสั่งซื้อ & แนบสลิป (พร้อมปุ่ม ? ดูรายละเอียดค่าใช้จ่าย) ==================== -->
+      <div id="checkoutStep3" class="hidden">
+        <h3 class="text-2xl sm:text-3xl font-extrabold text-center text-black mb-5">ชำระเงิน</h3>
+
+        <form onsubmit="submitFinalOrder(event)" class="space-y-5">
+          <div class="bg-[#F6F6F8] rounded-3xl p-4 sm:p-5 space-y-3 border border-gray-200">
+            <!-- หัวข้อสรุปคำสั่งซื้อ + ช่องทางชำระเงิน -->
+            <div class="flex items-center justify-between border-b border-gray-300 pb-2.5">
+              <span id="chkSummaryTitleScope" class="font-extrabold text-sm sm:text-base text-black">สรุปคำสั่งซื้อ (ภายในประเทศ)</span>
+              <span id="chkSummaryMethodLabel" class="font-extrabold text-sm sm:text-base text-hbOrange">QR PROMPTPAY</span>
+            </div>
+
+            <!-- รายการสินค้าพร้อมลูกศรปรับจำนวน ▲ ▼ -->
+            <div id="chkSummaryItemsList" class="space-y-2 border-b border-gray-300 pb-3 text-xs sm:text-sm text-zinc-700"></div>
+
+            <!-- รายละเอียดค่าใช้จ่ายทั้งหมด -->
+            <div class="space-y-1.5 text-xs sm:text-sm text-zinc-900">
+              <div class="flex justify-between">
+                <span>ราคาสินค้ารวม:</span>
+                <span id="chkSumSubtotal" class="font-semibold">0 ฿</span>
+              </div>
+
+              <div class="flex justify-between items-start">
+                <div>
+                  <span>ค่าจัดส่ง</span>
+                  <span id="chkShippingSubLabel" class="text-[11px] text-gray-500 block"></span>
+                </div>
+                <span id="chkSumShipping" class="font-semibold">0 ฿</span>
+              </div>
+
+              <!-- ค่าใช้จ่ายระหว่างเดินทาง (?) -->
+              <div id="chkRowTravelExpense" class="flex justify-between items-center relative">
+                <div class="flex items-center gap-1.5">
+                  <span>ค่าใช้จ่ายระหว่างเดินทาง</span>
+                  <div class="relative group inline-block">
+                    <button
+                      type="button"
+                      onclick="toggleFeeTooltip('tooltipTravelBox')"
+                      class="w-4 h-4 rounded-full border border-zinc-500 text-zinc-600 text-[10px] font-bold flex items-center justify-center hover:bg-zinc-800 hover:text-white transition"
+                    >
+                      ?
+                    </button>
+                    <!-- กล่องรายละเอียดค่าใช้จ่ายระหว่างเดินทางตามภาพต้นฉบับ -->
+                    <div
+                      id="tooltipTravelBox"
+                      class="hidden group-hover:block absolute left-6 -top-4 z-30 w-64 bg-white border border-gray-300 rounded-xl p-2.5 shadow-xl text-[11px] text-zinc-900 font-bold space-y-0.5 leading-snug"
+                    >
+                      <div class="flex justify-between"><span>ค่าอุปกรณ์เสริม</span><span>1,600 บาท</span></div>
+                      <div class="flex justify-between"><span>ค่าแวะพักแรม</span><span>1,000 บาท</span></div>
+                      <div class="flex justify-between"><span>ค่าพี่เลี้ยงม้า</span><span>14,000 บาท</span></div>
+                      <div class="flex justify-between text-zinc-900"><span>ค่ากักกันโรค</span><span>300,000 บาท</span></div>
+                      <div id="tooltipQuarantineRow" class="text-[10px] text-zinc-600 font-semibold">(*เฉพาะต่างประเทศเท่านั้น)</div>
+                    </div>
+                  </div>
+                </div>
+                <span id="chkSumTravelExpense" class="font-semibold">0 ฿</span>
+              </div>
+
+              <!-- ค่าเอกสารในการเดินทาง (?) -->
+              <div id="chkRowDocFee" class="flex justify-between items-center relative">
+                <div class="flex items-center gap-1.5">
+                  <span>ค่าเอกสารในการเดินทาง</span>
+                  <div class="relative group inline-block">
+                    <button
+                      type="button"
+                      onclick="toggleFeeTooltip('tooltipDocBox')"
+                      class="w-4 h-4 rounded-full border border-zinc-500 text-zinc-600 text-[10px] font-bold flex items-center justify-center hover:bg-zinc-800 hover:text-white transition"
+                    >
+                      ?
+                    </button>
+                    <!-- กล่องรายละเอียดค่าเอกสารในการเดินทางตามภาพต้นฉบับ -->
+                    <div
+                      id="tooltipDocBox"
+                      class="hidden group-hover:block absolute left-6 -top-2 z-30 w-64 bg-white border border-gray-300 rounded-xl p-2.5 shadow-xl text-[11px] text-zinc-900 font-bold space-y-0.5 leading-snug"
+                    >
+                      <div class="flex justify-between"><span>ค่าใบรับรองสุขภาพ</span><span>7,600 บาท</span></div>
+                      <div class="flex justify-between"><span>ค่าเอกสารผ่านแดนและศุลกากร</span><span>23,600 บาท</span></div>
+                    </div>
+                  </div>
+                </div>
+                <span id="chkSumDocFee" class="font-semibold">0 ฿</span>
+              </div>
+
+              <!-- ค่าประกัน (1.5%) -->
+              <div id="chkRowInsurance" class="flex justify-between">
+                <span>ค่าประกัน(1.5%)</span>
+                <span id="chkSumInsurance" class="font-semibold">0 ฿</span>
+              </div>
+
+              <!-- ภาษีมูลค่าเพิ่ม (VAT 7%) -->
+              <div class="flex justify-between pt-1 border-t border-gray-200">
+                <span>ภาษีมูลค่าเพิ่ม (VAT 7%):</span>
+                <span id="chkSumVat" class="font-semibold">0 ฿</span>
+              </div>
+
+              <!-- ราคารวมสุทธิ -->
+              <div class="flex justify-between font-extrabold text-black text-sm sm:text-base pt-1.5 border-t border-gray-300">
+                <span>ราคารวมสุทธิ (รวม VAT 7%):</span>
+                <span id="chkSumGrandTotal">0 ฿</span>
+              </div>
+
+              <!-- ยอดที่ต้องชำระรอบนี้ -->
+              <div class="flex justify-between font-extrabold text-green-700 text-base sm:text-lg pt-1">
+                <span>ยอดที่ต้องชำระรอบนี้:</span>
+                <span id="chkSumPayNow">0 ฿</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- แนบสลิป -->
+          <div>
+            <label class="block text-xs sm:text-sm font-extrabold text-black mb-2">
+              1. แนบหลักฐานการชำระเงิน (สลิป) <span class="text-red-600">*</span>
+            </label>
+            <div class="flex items-center border border-gray-300 rounded-full p-1.5 bg-white">
+              <label for="paymentSlipFile" class="px-5 py-2 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-xs sm:text-sm cursor-pointer transition shadow shrink-0">
+                Choose File
+              </label>
+              <input id="paymentSlipFile" type="file" accept="image/*" required onchange="updateSlipFilenameDisplay(this)" class="hidden" />
+              <span id="slipFileNameLabel" class="pl-3 text-xs sm:text-sm text-gray-500 truncate">No file chosen</span>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" onclick="backToCheckoutStep2()" class="w-1/3 py-3 rounded-full bg-gray-200 hover:bg-gray-300 text-zinc-800 font-extrabold text-xs sm:text-sm transition">
+              ย้อนกลับ
+            </button>
+            <button type="submit" class="w-2/3 py-3 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-xs sm:text-sm transition shadow-lg">
+              ยืนยันและรับใบเสร็จ
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 4. หน้าต่างใบเสร็จรับเงิน (Receipt Modal) ==================== -->
+  <div id="receiptModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="relative w-full max-w-md bg-white text-zinc-900 rounded-3xl p-6 sm:p-8 shadow-2xl my-8">
+      <div id="receiptPrintableArea" class="space-y-4">
+        <div class="text-center border-b border-gray-200 pb-4">
+          <h3 class="text-xl font-extrabold text-black">HORSE BUDDY RECEIPT</h3>
+          <p class="text-xs text-gray-500">ใบเสร็จรับเงิน / ยืนยันคำสั่งซื้อ</p>
+          <p id="rcpOrderNo" class="text-sm font-extrabold text-hbOrange mt-1"></p>
+          <p id="rcpDate" class="text-[11px] text-gray-400"></p>
+        </div>
+
+        <div class="text-xs space-y-1 border-b border-gray-200 pb-3">
+          <p><strong>ลูกค้า:</strong> <span id="rcpCustomer"></span></p>
+          <p><strong>วิธีชำระเงิน:</strong> <span id="rcpMethod"></span></p>
+          <p><strong>ที่อยู่จัดส่ง:</strong> <span id="rcpAddress"></span></p>
+          <p><strong>สถานะ:</strong> <span id="rcpStatus" class="text-amber-600 font-bold"></span></p>
+        </div>
+
+        <div id="rcpItemsList" class="text-xs space-y-1.5 border-b border-gray-200 pb-3"></div>
+
+        <div class="text-xs space-y-1">
+          <div class="flex justify-between"><span>ราคาสินค้ารวม:</span><span id="rcpSubtotal"></span></div>
+          <div class="flex justify-between"><span>ค่าจัดส่งและบริการเดินทาง:</span><span id="rcpFees"></span></div>
+          <div class="flex justify-between"><span>ภาษีมูลค่าเพิ่ม (VAT 7%):</span><span id="rcpVat"></span></div>
+          <div class="flex justify-between font-extrabold text-base text-green-700 pt-2 border-t border-gray-200">
+            <span>ยอดชำระสุทธิ:</span><span id="rcpGrandTotal"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-6">
+        <button type="button" onclick="downloadReceiptImage()" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition">
+          <i class="fa-solid fa-download mr-1"></i> บันทึกใบเสร็จ
+        </button>
+        <button type="button" onclick="closeModal('receiptModal')" class="py-2.5 rounded-xl bg-zinc-800 hover:bg-black text-white font-bold text-xs sm:text-sm transition">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 5. หน้าต่างกระดิ่งแจ้งเตือนลูกค้า & ประวัติคำสั่งซื้อ ==================== -->
+  <div id="notificationsModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-lg bg-zinc-900 border border-white/15 rounded-3xl p-6 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 class="text-lg font-extrabold text-hbGold flex items-center gap-2">
+          <i class="fa-solid fa-bell"></i> การแจ้งเตือนสถานะคำสั่งซื้อ
+        </h3>
+        <button onclick="closeModal('notificationsModal')" class="w-8 h-8 rounded-full bg-white/10 hover:bg-hbOrange flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="notificationsListContainer" class="flex-1 overflow-y-auto space-y-2.5 py-4 pr-1"></div>
+      <div class="pt-3 border-t border-white/10 flex justify-end">
+        <button onclick="closeModal('notificationsModal'); openOrdersHistoryModal();" class="text-xs font-bold text-hbOrange hover:underline">
+          ดูประวัติคำสั่งซื้อและรีวิวสินค้าทั้งหมด →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- หน้าต่างติดตามคำสั่งซื้อและเขียนรีวิว -->
+  <div id="ordersHistoryModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-2xl bg-zinc-900 border border-white/15 rounded-3xl p-6 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-truck-fast text-hbOrange"></i> ประวัติและสถานะคำสั่งซื้อของคุณ
+        </h3>
+        <button onclick="closeModal('ordersHistoryModal')" class="w-8 h-8 rounded-full bg-white/10 hover:bg-hbOrange flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="ordersHistoryListContainer" class="flex-1 overflow-y-auto space-y-4 py-4 pr-1"></div>
+    </div>
+  </div>
+
+<!-- ==================== 6. หน้าต่าง LOGIN / SIGN UP (ดีไซน์ต้นฉบับ ตัดปุ่ม Facebook ออก) ==================== -->
+  <div id="authModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="relative w-full max-w-md bg-black border border-white/15 rounded-[40px] p-8 sm:p-10 shadow-2xl my-8 text-white">
+      <!-- ปุ่มกากบาทปิดหน้าต่าง -->
+      <button
+        type="button"
+        onclick="closeModal('authModal')"
+        class="absolute top-5 right-5 w-9 h-9 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white flex items-center justify-center transition"
+      >
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <!-- ==================== มุมมอง LOGIN ==================== -->
+      <div id="loginFormBox">
+        <h3 class="text-3xl sm:text-4xl font-extrabold text-center tracking-wider text-white mb-8">LOGIN</h3>
+
+        <form onsubmit="handleUserLogin(event)" class="space-y-4">
+          <!-- ช่องกรอก Username หรือ Gmail -->
+          <div class="relative">
+            <input
+              id="loginEmail"
+              type="text"
+              required
+              placeholder="USERNAME"
+              class="w-full bg-black border-2 border-white rounded-full py-3.5 pl-6 pr-12 text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+            />
+            <i class="fa-solid fa-user absolute right-5 top-1/2 -translate-y-1/2 text-white text-lg"></i>
+          </div>
+
+          <!-- ช่องกรอก Password -->
+          <div class="relative">
+            <input
+              id="loginPassword"
+              type="password"
+              required
+              placeholder="PASSWORD"
+              class="w-full bg-black border-2 border-white rounded-full py-3.5 pl-6 pr-12 text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+            />
+            <i class="fa-solid fa-lock absolute right-5 top-1/2 -translate-y-1/2 text-white text-lg"></i>
+          </div>
+
+          <!-- REMEMBER ME & FORGOT PASSWORD? -->
+            <div class="flex items-center justify-between text-xs sm:text-sm text-gray-300 pt-1">
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input id="loginRememberMe" type="checkbox" class="w-4 h-4 rounded accent-hbOrange" />
+                <span>REMEMBER ME</span>
+              </label>
+              <button type="button" onclick="openSupportRequestModal()" class="hover:text-hbGold underline transition">
+                FORGOT PASSWORD?
+              </button>
+            </div>
+
+          <!-- ข้อความแจ้งเตือนเมื่อรหัสผิด -->
+          <p id="loginErrorMsg" class="text-xs sm:text-sm text-red-400 text-center font-medium hidden">
+            Username หรือ Password ไม่ถูกต้อง
+          </p>
+
+          <!-- ปุ่ม LOGIN สีขาวทรงแคปซูล -->
+          <div class="pt-2">
+            <button
+              type="submit"
+              class="w-full py-3.5 rounded-full bg-white hover:bg-gray-200 text-black font-extrabold text-lg sm:text-xl tracking-wide transition shadow-lg"
+            >
+              LOGIN
+            </button>
+          </div>
+        </form>
+
+        <!-- ปุ่ม Google (ตัดปุ่ม Facebook ออกตามที่ต้องการ) -->
+        <div class="flex justify-center items-center mt-6">
+          <button
+            type="button"
+            onclick="handleGoogleQuickLogin()"
+            title="เข้าสู่ระบบด้วย Google"
+            class="w-11 h-11 rounded-full bg-white hover:scale-105 transition flex items-center justify-center shadow-md"
+          >
+            <svg class="w-6 h-6" viewBox="0 0 24 24">
+              <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z"/>
+              <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.7z"/>
+              <path fill="#FBBC05" d="M5.3 14.8c-.2-.8-.4-1.8-.4-2.8s.2-2 .4-2.8L1.6 6.4C.6 8.4 0 10.6 0 12s.6 3.6 1.6 5.6l3.7-2.8z"/>
+              <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5L1.6 16.1C3.5 19.9 7.4 23 12 23z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- ลิงก์ทดลองระบบไว & สลับไปหน้า SIGN UP -->
+        <div class="mt-5 text-center space-y-2">
+          <p class="text-xs text-hbGold">
+            (ทดลองระบบไว: <button type="button" onclick="loginWithDemoCowboy()" class="underline hover:text-amber-300">คลิกเข้าสู่ระบบด้วยบัญชีตัวอย่าง</button>)
+          </p>
+          <p class="text-xs sm:text-sm text-gray-200 tracking-wide">
+            DON'T HAVE AN ACCOUNT?
+            <button type="button" onclick="openAuthModal('register')" class="font-extrabold text-white underline ml-1 hover:text-hbGold">
+              SIGN UP
+            </button>
+          </p>
+        </div>
+      </div>
+
+      <!-- ==================== มุมมอง SIGN UP ==================== -->
+      <div id="registerFormBox" class="hidden">
+        <h3 class="text-3xl sm:text-4xl font-extrabold text-center tracking-wider text-white mb-7">SIGN UP</h3>
+
+        <form onsubmit="handleUserRegister(event)" class="space-y-4">
+          <!-- USERNAME -->
+          <div class="relative">
+            <input
+              id="regUsername"
+              type="text"
+              required
+              placeholder="USERNAME"
+              class="w-full bg-black border-2 border-white rounded-full py-3 pl-6 pr-12 text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+            />
+            <i class="fa-solid fa-user absolute right-5 top-1/2 -translate-y-1/2 text-white text-base"></i>
+          </div>
+
+          <!-- GMAIL (1 Gmail = 1 บัญชี) -->
+          <div class="relative">
+            <input
+              id="regEmail"
+              type="email"
+              required
+              placeholder="GMAIL (1 Gmail = 1 บัญชี)"
+              class="w-full bg-black border-2 border-white rounded-full py-3 pl-6 pr-12 text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+            />
+            <i class="fa-solid fa-envelope absolute right-5 top-1/2 -translate-y-1/2 text-white text-base"></i>
+          </div>
+
+          <!-- PHONE NUMBER (1 เบอร์ = 1 บัญชี) -->
+          <div class="relative">
+            <input
+              id="regPhone"
+              type="tel"
+              required
+              placeholder="PHONE NUMBER (1 เบอร์ = 1 บัญชี)"
+              class="w-full bg-black border-2 border-white rounded-full py-3 pl-6 pr-12 text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+            />
+            <i class="fa-solid fa-phone absolute right-5 top-1/2 -translate-y-1/2 text-white text-base"></i>
+          </div>
+
+          <!-- PASSWORD & CONFIRM (2 คอลัมน์คู่กันตามภาพต้นฉบับ) -->
+          <div class="grid grid-cols-2 gap-3">
+            <input
+              id="regPassword"
+              type="password"
+              required
+              placeholder="PASSWORD"
+              class="w-full bg-black border-2 border-white rounded-full py-3 px-5 text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+            />
+            <input
+              id="regConfirmPassword"
+              type="password"
+              required
+              placeholder="CONFIRM"
+              class="w-full bg-black border-2 border-white rounded-full py-3 px-5 text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+            />
+          </div>
+
+          <p id="regErrorMsg" class="text-xs sm:text-sm text-red-400 text-center font-medium hidden"></p>
+
+          <!-- ปุ่ม SUBMIT สีขาวทรงแคปซูล -->
+          <div class="pt-2">
+            <button
+              type="submit"
+              class="w-full py-3.5 rounded-full bg-white hover:bg-gray-200 text-black font-extrabold text-lg sm:text-xl tracking-wide transition shadow-lg"
+            >
+              SUBMIT
+            </button>
+          </div>
+        </form>
+
+        <!-- ปุ่ม Google (ตัดปุ่ม Facebook ออกตามที่ต้องการ) -->
+        <div class="flex justify-center items-center mt-6">
+          <button
+            type="button"
+            onclick="handleGoogleQuickLogin()"
+            title="สมัคร/เข้าสู่ระบบด้วย Google"
+            class="w-11 h-11 rounded-full bg-white hover:scale-105 transition flex items-center justify-center shadow-md"
+          >
+            <svg class="w-6 h-6" viewBox="0 0 24 24">
+              <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z"/>
+              <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.7z"/>
+              <path fill="#FBBC05" d="M5.3 14.8c-.2-.8-.4-1.8-.4-2.8s.2-2 .4-2.8L1.6 6.4C.6 8.4 0 10.6 0 12s.6 3.6 1.6 5.6l3.7-2.8z"/>
+              <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5L1.6 16.1C3.5 19.9 7.4 23 12 23z"/>
+            </svg>
+          </button>
+        </div>
+
+        <p class="mt-5 text-center text-xs sm:text-sm text-gray-200 tracking-wide">
+          HAVE AN ACCOUNT?
+          <button type="button" onclick="openAuthModal('login')" class="font-extrabold text-white underline ml-1 hover:text-hbGold">
+            LOGIN
+          </button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- หน้าต่างส่งคำร้องแจ้งปัญหาบัญชีถึงแอดมิน -->
+  <div id="supportRequestModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-md bg-zinc-900 border border-white/15 rounded-3xl p-6 shadow-2xl">
+      <button onclick="closeModal('supportRequestModal')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-hbOrange flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <h3 class="text-lg font-extrabold text-hbGold mb-4">ส่งคำร้องแจ้งปัญหาบัญชีถึงแอดมิน</h3>
+      <form onsubmit="submitSupportRequest(event)" class="space-y-3.5 text-xs sm:text-sm">
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">อีเมลหรือเบอร์โทรที่ใช้สมัคร</label>
+          <input id="supEmailInput" type="text" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2 px-3 text-white" />
+        </div>
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">หัวข้อปัญหา</label>
+          <select id="supReasonInput" class="w-full bg-black/60 border border-white/20 rounded-xl py-2 px-3 text-white">
+            <option value="ลืมรหัสผ่าน">ลืมรหัสผ่าน</option>
+            <option value="ต้องการเปลี่ยนอีเมล/เบอร์โทร">ต้องการเปลี่ยนอีเมล/เบอร์โทร</option>
+            <option value="ปัญหาการชำระเงิน/คำสั่งซื้อ">ปัญหาการชำระเงิน/คำสั่งซื้อ</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">รายละเอียดและช่องทางติดต่อกลับ</label>
+          <textarea id="supDetailsInput" rows="3" required class="w-full bg-black/60 border border-white/20 rounded-xl p-3 text-white"></textarea>
+        </div>
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold transition">
+          ส่งคำร้องถึงแอดมิน
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== 7. หน้าต่างโปรไฟล์ผู้ใช้งาน (ดีไซน์ต้นฉบับ) ==================== -->
+  <div id="profileModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="relative w-full max-w-lg bg-[#161616] border border-white/15 rounded-[28px] p-6 sm:p-7 shadow-2xl my-8 text-white flex flex-col justify-between min-h-[580px]">
+      <!-- ปุ่มกากบาทมุมขวาบน -->
+      <button
+        type="button"
+        onclick="closeModal('profileModal')"
+        class="absolute top-4 right-4 w-9 h-9 rounded-full bg-zinc-800 hover:bg-hbOrange text-white flex items-center justify-center transition z-20"
+      >
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div>
+        <!-- ส่วนหัวโปรไฟล์ (แสดงเหมือนกันทุกหน้าย่อย) -->
+        <div class="flex items-center gap-4 pb-5 border-b border-white/10">
+          <div class="relative shrink-0">
+            <img
+              id="profAvatarPreview"
+              src="https://api.dicebear.com/7.x/bottts/svg?seed=HorseBuddy"
+              alt="Avatar"
+              class="w-20 h-20 rounded-full object-cover border-[3px] border-[#D4AF37] bg-white shadow-md"
+            />
+            <input id="profAvatarInput" type="file" accept="image/*" class="hidden" onchange="handleUserAvatarUpload(event)" />
+          </div>
+
+          <div class="space-y-1">
+            <h3 id="profHeaderName" class="text-2xl font-extrabold text-[#FACC15] leading-none">p'namo</h3>
+            <p id="profHeaderEmail" class="text-xs sm:text-sm text-gray-400">demo@gmail.com</p>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <span class="px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold">
+                บัญชีผู้ใช้ยืนยัน OTP แล้ว
+              </span>
+              <button
+                type="button"
+                onclick="document.getElementById('profAvatarInput').click()"
+                class="px-3.5 py-1 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white text-[11px] font-extrabold transition shadow"
+              >
+                แก้ไขรูปโปรไฟล์
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== มุมมองที่ 0: เมนูหลัก 4 แถว (ตามภาพที่ 1) ==================== -->
+        <div id="profViewMenu" class="pt-2">
+          <div class="divide-y divide-white/80 text-sm sm:text-base font-bold text-white">
+            <button
+              type="button"
+              onclick="switchProfileSubView('security')"
+              class="w-full py-3.5 px-2 flex items-center justify-between hover:text-hbGold transition"
+            >
+              <span>บัญชี&และความปลอดภัย</span>
+              <span class="font-extrabold text-lg">&gt;</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="switchProfileSubView('address')"
+              class="w-full py-3.5 px-2 flex items-center justify-between hover:text-hbGold transition"
+            >
+              <span>ที่อยู่จัดส่ง</span>
+              <span class="font-extrabold text-lg">&gt;</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="switchProfileSubView('policy')"
+              class="w-full py-3.5 px-2 flex items-center justify-between hover:text-hbGold transition"
+            >
+              <span>นโยบาย</span>
+              <span class="font-extrabold text-lg">&gt;</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="switchProfileSubView('help')"
+              class="w-full py-3.5 px-2 flex items-center justify-between hover:text-hbGold transition"
+            >
+              <span>ช่วยเหลือ</span>
+              <span class="font-extrabold text-lg">&gt;</span>
+            </button>
+            <div class="border-b border-white/80"></div>
+          </div>
+
+          <!-- ลายน้ำเงาคาวบอยจูงม้าด้านล่าง (เปลี่ยนชื่อไฟล์รูปที่ src="..." ได้เลย) -->
+          <div class="hb-profile-watermark-box">
+            <img
+              src="img/kema.png"
+              onerror="this.style.display='none'"
+              alt="Profile Watermark"
+              class="hb-profile-watermark-img"
+            />
+          </div>
+        </div>
+
+        <!-- ==================== มุมมองที่ 1: บัญชี&และความปลอดภัย (ตามภาพที่ 2) ==================== -->
+        <div id="profViewSecurity" class="hidden pt-4">
+          <button
+            type="button"
+            onclick="switchProfileSubView('menu')"
+            class="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-[#FACC15] mb-5 hover:opacity-85 transition"
+          >
+            <i class="fa-solid fa-arrow-left text-hbOrange text-xl"></i>
+            <span>บัญชี&และความปลอดภัย</span>
+          </button>
+
+          <form id="profSecurityForm" onsubmit="saveProfileSecurity(event)" class="space-y-4 text-xs sm:text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-gray-200 mb-1.5 text-xs">ชื่อผู้ใช้งาน(USERNAME)</label>
+                <input
+                  id="profUsername"
+                  type="text"
+                  required
+                  class="w-full bg-black border border-white/70 rounded-2xl py-2.5 px-4 text-white focus:outline-none focus:border-hbGold"
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-200 mb-1.5 text-xs">เบอร์โทรศัพท์</label>
+                <input
+                  id="profPhone"
+                  type="tel"
+                  required
+                  class="w-full bg-black border border-white/70 rounded-2xl py-2.5 px-4 text-white focus:outline-none focus:border-hbGold"
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-200 mb-1.5 text-xs">GMAIL</label>
+                <input
+                  id="profEmail"
+                  type="email"
+                  required
+                  class="w-full bg-black border border-white/70 rounded-2xl py-2.5 px-4 text-white focus:outline-none focus:border-hbGold"
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-200 mb-1.5 text-xs">PASSWORED</label>
+                <div class="relative">
+                  <input
+                    id="profPassword"
+                    type="password"
+                    required
+                    autocomplete="new-password"
+                    class="w-full bg-black border border-white/70 rounded-2xl py-2.5 pl-4 pr-10 text-white tracking-wider focus:outline-none focus:border-hbGold"
+                  />
+                  <button
+                    type="button"
+                    onclick="toggleProfilePasswordVisibility()"
+                    title="แสดง/ซ่อนรหัสผ่าน"
+                    class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
+                  >
+                    <i id="profPassEyeIcon" class="fa-solid fa-eye-slash text-xs"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-1">
+              <button
+                type="submit"
+                class="px-7 py-2 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-sm sm:text-base transition shadow-lg"
+              >
+                บันทึกข้อมูล
+              </button>
+            </div>
+          </form>
+
+          <!-- ลายน้ำเงาคาวบอยจูงม้าด้านล่าง (เปลี่ยนชื่อไฟล์รูปที่ src="..." ได้เลย) -->
+          <div class="hb-profile-watermark-box">
+            <img
+              src="img/kema.png"
+              onerror="this.style.display='none'"
+              alt="Profile Watermark"
+              class="hb-profile-watermark-img"
+            />
+          </div>
+        </div>
+
+        <!-- ==================== มุมมองที่ 2: ที่อยู่จัดส่ง (ล็อกในประเทศ/ต่างประเทศ + รหัสโทรศัพท์ ITU ทั่วโลก) ==================== -->
+        <div id="profViewAddress" class="hidden pt-4">
+          <div class="flex items-center justify-between mb-4">
+            <button
+              type="button"
+              onclick="switchProfileSubView('menu')"
+              class="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-[#FACC15] hover:opacity-85 transition"
+            >
+              <i class="fa-solid fa-arrow-left text-hbOrange text-xl"></i>
+              <span>ที่อยู่</span>
+            </button>
+            <input
+              id="addrDistanceKm"
+              type="text"
+              readonly
+              value="0 กม."
+              class="w-28 bg-black/50 border border-white/20 rounded-full py-1 px-3 text-center text-xs font-extrabold text-[#FACC15]"
+              title="ระยะทางคำนวณจากฟาร์ม"
+            />
+          </div>
+
+          <form id="profAddressForm" onsubmit="saveProfileAddress(event)" class="space-y-3 text-xs sm:text-sm">
+            <!-- แถวที่ 1: ชื่อ-นามสกุล & เบอร์โทรศัพท์ (พร้อมตัวเลือกรหัสโทรศัพท์ระหว่างประเทศ ITU ทั่วโลก) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-gray-200 mb-1 text-xs">ชื่อ-นามสกุล</label>
+                <input
+                  id="addrRecipientName"
+                  type="text"
+                  required
+                  placeholder="ชื่อ-นามสกุลผู้รับ"
+                  class="w-full bg-black border border-white/70 rounded-2xl py-2 px-3.5 text-white focus:outline-none focus:border-hbGold"
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-200 mb-1 text-xs">เบอร์โทรศัพท์</label>
+                <div class="flex items-center bg-black border border-white/70 rounded-2xl px-2.5 py-1.5 focus-within:border-hbGold">
+                  <select
+                    id="addrPhoneDialCode"
+                    title="เลือกรหัสโทรศัพท์ระหว่างประเทศ (ITU)"
+                    class="bg-black text-white font-bold text-xs pr-1.5 border-r border-white/40 focus:outline-none cursor-pointer max-w-[105px] truncate"
+                  >
+                    <option value="+66">+66 🇹🇭 TH</option>
+                  </select>
+                  <input
+                    id="addrRecipientPhone"
+                    type="tel"
+                    required
+                    placeholder="812345678"
+                    class="w-full bg-transparent pl-2.5 text-white focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- แถวที่ 2: ในประเทศไทย/ต่างประเทศ (ล็อกค่า ไม่มีลูกศร) & ตำแหน่งจัดส่ง (ชื่อสถานที่จริง ไม่ใช้ละติจูด) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+              <div>
+                <label class="block font-bold text-gray-200 mb-1 text-xs">ในประเทศไทย/ต่างประเทศ</label>
+                <input
+                  id="addrCountryScope"
+                  type="text"
+                  readonly
+                  value="ในประเทศ"
+                  title="ระบบเปลี่ยนให้อัตโนมัติตามตำแหน่งหมุดบนแผนที่"
+                  class="w-full bg-black border border-white/70 rounded-2xl py-2 px-3.5 text-white font-bold cursor-not-allowed select-none focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-200 mb-1 text-xs">ตำแหน่งจัดส่ง</label>
+                <input
+                  id="addrRegionText"
+                  type="text"
+                  required
+                  placeholder="จังหวัด,เขต/อำเภอ,แขวง/ตำบล"
+                  class="w-full bg-black border border-white/70 rounded-2xl py-2 px-3.5 text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+                />
+                <button
+                  type="button"
+                  onclick="useCurrentLocationForAddress()"
+                  class="mt-1.5 px-3 py-1 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white text-[11px] font-extrabold transition shadow"
+                >
+                  ใช้ตำแหน่งปัจจุบัน
+                </button>
+              </div>
+            </div>
+
+            <!-- แถวที่ 3: รายละเอียดการจัดส่ง -->
+            <div>
+              <label class="block font-bold text-gray-200 mb-1 text-xs">รายละเอียดการจัดส่ง</label>
+              <input
+                id="addrDetailText"
+                type="text"
+                required
+                placeholder="บ้านเลขที่,ซอย,หมู่,ถนน,แขวง/ตำบล,รหัสไปรษณีย์"
+                class="w-full bg-black border border-white/70 rounded-2xl py-2 px-3.5 text-white placeholder-gray-400 focus:outline-none focus:border-hbGold"
+              />
+            </div>
+
+            <!-- แผนที่ขอบสีทอง คลิกหรือลากหมุดเพื่อดึงชื่อสถานที่และคำนวณระยะทาง -->
+            <div class="pt-1">
+              <div id="userAddressMap" class="w-full h-44 rounded-lg border-2 border-[#FACC15] overflow-hidden z-10"></div>
+            </div>
+
+            <div class="pt-1">
+              <button
+                type="submit"
+                class="px-7 py-2 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-sm sm:text-base transition shadow-lg"
+              >
+                บันทึกข้อมูล
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ==================== มุมมองที่ 3: นโยบาย ==================== -->
+        <div id="profViewPolicy" class="hidden pt-4 space-y-3">
+          <button
+            type="button"
+            onclick="switchProfileSubView('menu')"
+            class="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-[#FACC15] mb-2 hover:opacity-85 transition"
+          >
+            <i class="fa-solid fa-arrow-left text-hbOrange text-xl"></i>
+            <span>นโยบายฟาร์มและการรับประกัน</span>
+          </button>
+          <div class="bg-black/60 border border-white/15 rounded-2xl p-4 text-xs sm:text-sm text-gray-300 space-y-2 leading-relaxed max-h-72 overflow-y-auto">
+            <p class="font-bold text-amber-400">1. การรับประกันสุขภาพม้าและการตรวจโรค</p>
+            <p>ม้าทุกตัวจาก HORSE BUDDY ผ่านการตรวจสุขภาพและฉีดวัคซีนครบถ้วนพร้อมใบรับรองจากสัตวแพทย์ก่อนออกเดินทาง</p>
+            <p class="font-bold text-amber-400 pt-1">2. มาตรฐานการจัดส่งและประกันภัย (1.5%)</p>
+            <p>การจัดส่งม้ามีทีมพี่เลี้ยงม้าดูแลตลอดเส้นทาง พร้อมประกันภัยคุ้มครองอุบัติเหตุระหว่างการขนส่งทั้งทางบกและทางอากาศ</p>
+            <p class="font-bold text-amber-400 pt-1">3. นโยบายข้อมูลส่วนบุคคล</p>
+            <p>ข้อมูลบัญชี เบอร์โทรศัพท์ และพิกัดที่อยู่จัดส่งของลูกค้าจะถูกเก็บรักษาไว้เป็นความลับเพื่อใช้ในการจัดส่งสินค้าเท่านั้น</p>
+          </div>
+        </div>
+
+        <!-- ==================== มุมมองที่ 4: ช่วยเหลือ (ส่งคำร้องถึงแอดมิน) ==================== -->
+        <div id="profViewHelp" class="hidden pt-4 space-y-3">
+          <button
+            type="button"
+            onclick="switchProfileSubView('menu')"
+            class="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-[#FACC15] mb-2 hover:opacity-85 transition"
+          >
+            <i class="fa-solid fa-arrow-left text-hbOrange text-xl"></i>
+            <span>ช่วยเหลือ / แจ้งปัญหาถึงแอดมิน</span>
+          </button>
+          <form onsubmit="submitProfileHelpRequest(event)" class="space-y-3 text-xs sm:text-sm">
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">หัวข้อที่ต้องการความช่วยเหลือ</label>
+              <select id="profHelpReason" class="w-full bg-black border border-white/70 rounded-2xl py-2 px-3.5 text-white">
+                <option value="สอบถามสถานะการจัดส่งม้า/สินค้า">สอบถามสถานะการจัดส่งม้า/สินค้า</option>
+                <option value="แจ้งเปลี่ยนข้อมูลบัญชี/เบอร์โทรศัพท์">แจ้งเปลี่ยนข้อมูลบัญชี/เบอร์โทรศัพท์</option>
+                <option value="แจ้งปัญหาการชำระเงิน/แนบสลิป">แจ้งปัญหาการชำระเงิน/แนบสลิป</option>
+                <option value="อื่นๆ">อื่นๆ</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">รายละเอียด</label>
+              <textarea
+                id="profHelpDetails"
+                rows="3"
+                required
+                placeholder="ระบุรายละเอียดที่ต้องการให้แอดมินช่วยเหลือ..."
+                class="w-full bg-black border border-white/70 rounded-2xl p-3 text-white focus:outline-none focus:border-hbGold"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="px-7 py-2 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-sm transition shadow-lg"
+            >
+              ส่งข้อความถึงแอดมิน
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ปุ่มออกจากระบบด้านล่างสุด (แสดงตามภาพที่ 1, 2, 3) -->
+      <div class="pt-5">
+        <button
+          type="button"
+          onclick="handleUserLogout()"
+          class="w-full py-3 rounded-full bg-[#3B1818] hover:bg-red-900/80 text-red-200 border border-red-800/60 text-sm sm:text-base font-extrabold transition flex items-center justify-center gap-2 shadow-inner"
+        >
+          <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 8. หน้าต่าง LOGIN ADMIN (เปิดเมื่อพิมพ์ CODENAME:UMA.ADMIN ในช่องค้นหา) ==================== -->
+  <div id="adminSecretLoginModal" class="fixed inset-0 z-[80] hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-md bg-black/90 border border-white/15 rounded-[36px] p-8 sm:p-10 shadow-2xl text-white overflow-hidden">
+      <button onclick="closeModal('adminSecretLoginModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-hbOrange flex items-center justify-center z-20 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <img
+        src="logo.png"
+        onerror="this.style.display='none'"
+        alt="Horse Line Art"
+        class="absolute inset-0 m-auto w-64 h-64 object-contain opacity-15 pointer-events-none select-none"
+      />
+
+      <!-- ขั้นที่ 1: กรอก USERNAME & PASSWORD ของแอดมิน -->
+      <div id="adminLoginStep1" class="relative z-10">
+        <div class="text-center mb-8">
+          <h3 class="text-3xl sm:text-4xl font-extrabold tracking-wider text-white leading-tight">LOGIN</h3>
+          <h4 class="text-3xl sm:text-4xl font-extrabold tracking-wider text-[#FACC15] leading-tight">ADMIN</h4>
+        </div>
+
+        <form onsubmit="handleAdminSecretLogin(event)" class="space-y-5">
+          <div class="relative">
+            <input
+              id="admLoginUser"
+              type="text"
+              required
+              placeholder="USERNAME"
+              class="w-full bg-transparent border-2 border-white rounded-full py-3 px-6 pr-12 text-sm text-white placeholder-gray-300 focus:outline-none focus:border-[#FACC15]"
+            />
+            <i class="fa-solid fa-user absolute right-5 top-1/2 -translate-y-1/2 text-[#FACC15] text-lg"></i>
+          </div>
+
+          <div class="relative">
+            <input
+              id="admLoginPass"
+              type="password"
+              required
+              placeholder="PASSWORD"
+              class="w-full bg-transparent border-2 border-white rounded-full py-3 px-6 pr-12 text-sm text-white placeholder-gray-300 focus:outline-none focus:border-[#FACC15]"
+            />
+            <i class="fa-solid fa-lock absolute right-5 top-1/2 -translate-y-1/2 text-[#FACC15] text-lg"></i>
+          </div>
+
+          <p id="admLoginErrorMsg" class="text-xs text-red-400 text-center font-semibold hidden"></p>
+
+          <div class="pt-2">
+            <button
+              type="submit"
+              class="w-full bg-white hover:bg-[#FACC15] text-black font-extrabold rounded-full py-3 text-lg tracking-widest transition shadow-lg"
+            >
+              LOGIN
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ขั้นที่ 2: ยืนยันรหัส OTP 6 หลักทางอีเมลแอดมิน -->
+      <div id="adminLoginStep2Otp" class="relative z-10 hidden text-center space-y-4">
+        <h3 class="text-2xl font-extrabold text-[#FACC15]">ADMIN OTP VERIFICATION</h3>
+        <p id="admOtpSentInfo" class="text-xs text-gray-300">ระบบได้ส่งรหัส OTP 6 หลักไปยังอีเมลแอดมินแล้ว</p>
+
+        <div id="admDemoOtpBanner" class="bg-amber-500/20 border border-[#FACC15] rounded-2xl p-3">
+          <p class="text-[11px] text-amber-200">รหัส OTP สำหรับเข้าสู่ระบบแอดมิน:</p>
+          <p id="admDemoOtpValue" class="text-2xl font-extrabold tracking-widest text-white mt-0.5">123456</p>
+        </div>
+
+        <form onsubmit="handleAdminOtpVerify(event)" class="space-y-4">
+          <input
+            id="admOtpInput"
+            type="text"
+            maxlength="6"
+            required
+            placeholder="000000"
+            class="w-full bg-black/70 border-2 border-white rounded-full py-3 px-6 text-center tracking-[0.5em] text-xl font-extrabold text-white focus:outline-none focus:border-[#FACC15]"
+          />
+          <p id="admOtpErrorMsg" class="text-xs text-red-400 font-semibold hidden"></p>
+          <button
+            type="submit"
+            class="w-full bg-[#FACC15] hover:bg-amber-400 text-black font-extrabold rounded-full py-3 text-base tracking-wider transition shadow-lg"
+          >
+            ยืนยัน OTP เข้าสู่หลังบ้าน
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+<!-- ปุ่มเลื่อนขึ้นบนสุดอย่างลื่นไหล (Smooth Scroll to Top Button) -->
+  <button
+    id="scrollToTopBtn"
+    type="button"
+    onclick="scrollToTopSmoothly()"
+    title="เลื่อนกลับขึ้นด้านบนสุด"
+    class="fixed bottom-6 right-6 z-40 hidden w-12 h-12 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white shadow-2xl border-2 border-white/25 flex items-center justify-center transition-all duration-300 hover:scale-110"
+  >
+    <i class="fa-solid fa-arrow-up text-lg"></i>
+  </button>
+
+  <!-- กล่องแจ้งเตือนมุมขวาล่าง (Toast Notification) -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-[90] hidden bg-hbOrange text-white px-5 py-3 rounded-2xl shadow-2xl font-bold text-sm flex items-center gap-2.5">
+    <i class="fa-solid fa-bell"></i>
+    <span id="toastMessageText">แจ้งเตือน</span>
+  </div>
+  <!-- ปุ่มเมนู 3 ขีด (☰) แบบพื้นหลังใส (ปรับตำแหน่งและขนาดได้ที่ไฟล์ Cuma.css) -->
+  <button
+    type="button"
+    id="hbHamburgerBtn"
+    onclick="toggleQuickCategoryDrawer()"
+    title="เมนูหมวดหมู่สินค้า"
+    class="hb-menu-btn"
+  >
+    <span class="hb-menu-line"></span>
+    <span class="hb-menu-line"></span>
+    <span class="hb-menu-line"></span>
+  </button>
+
+  <!-- เมนูทางลัดหมวดหมู่ (ใช้ไอคอนแทนอีโมจิ และปรับตำแหน่งได้ที่ไฟล์ Cuma.css) -->
+  <div id="quickCategoryDrawer" class="hb-menu-drawer hidden">
+    <p class="text-xs text-hbGold px-3 pb-2.5 border-b border-white/15 font-extrabold tracking-wide flex items-center gap-2">
+      <i class="fa-solid fa-layer-group"></i>
+      <span>หมวดหมู่ภายในฟาร์ม</span>
+    </p>
+    <a href="#top" onclick="toggleQuickCategoryDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-hbOrange text-white group transition">
+      <i class="fa-solid fa-house w-5 text-center text-hbGold group-hover:text-white transition"></i>
+      <span>หน้าแรก</span>
+    </a>
+    <a href="#hbHistoryStorySection" onclick="toggleQuickCategoryDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-hbOrange text-white group transition">
+      <i class="fa-solid fa-book-open w-5 text-center text-hbGold group-hover:text-white transition"></i>
+      <span>ทำไมถึงต้องม้า / ประวัติฟาร์ม</span>
+    </a>
+    <a href="#sectionRacing" onclick="toggleQuickCategoryDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-hbOrange text-white group transition">
+      <i class="fa-solid fa-horse-head w-5 text-center text-hbGold group-hover:text-white transition"></i>
+      <span>RACING HORSE (ม้าแข่ง)</span>
+    </a>
+    <a href="#sectionShow" onclick="toggleQuickCategoryDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-hbOrange text-white group transition">
+      <i class="fa-solid fa-award w-5 text-center text-hbGold group-hover:text-white transition"></i>
+      <span>SHOW HORSE (ม้าโชว์)</span>
+    </a>
+    <a href="#sectionFeed" onclick="toggleQuickCategoryDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-hbOrange text-white group transition">
+      <i class="fa-solid fa-wheat-awn w-5 text-center text-hbGold group-hover:text-white transition"></i>
+      <span>อาหารสัตว์ (HORSE FEED)</span>
+    </a>
+    <a href="#sectionEquipment" onclick="toggleQuickCategoryDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-hbOrange text-white group transition">
+      <i class="fa-solid fa-toolbox w-5 text-center text-hbGold group-hover:text-white transition"></i>
+      <span>อุปกรณ์เสริมสำหรับม้า</span>
+    </a>
+  </div>
+
+  <!-- หน้าต่างยืนยันรหัส OTP 6 หลัก (ส่งเข้า Gmail จริง) -->
+  <div id="userSignupOtpModal" class="fixed inset-0 z-[70] hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-md bg-black border-2 border-white/20 rounded-[36px] p-8 shadow-2xl text-center text-white space-y-4">
+      <button type="button" onclick="closeModal('userSignupOtpModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-800 hover:bg-hbOrange flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="w-14 h-14 rounded-full bg-hbOrange/20 border border-hbOrange text-hbGold flex items-center justify-center mx-auto text-2xl">
+        <i class="fa-solid fa-envelope-circle-check"></i>
+      </div>
+      <h3 class="text-2xl font-extrabold text-hbGold tracking-wider">ยืนยันรหัส OTP 6 หลัก</h3>
+      <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+        ระบบได้ส่งรหัส OTP 6 หลักไปยังกล่องข้อความ Gmail ของคุณที่<br />
+        <strong id="signupOtpEmailTarget" class="text-amber-300 text-sm"></strong>
+      </p>
+
+      <form onsubmit="confirmUserSignupOtp(event)" class="space-y-4 pt-1">
+        <input
+          id="signupOtpInput"
+          type="text"
+          maxlength="6"
+          required
+          placeholder="000000"
+          class="w-full bg-zinc-900 border-2 border-white rounded-full py-3 px-6 text-center tracking-[0.5em] text-xl font-extrabold text-white focus:outline-none focus:border-hbGold"
+        />
+        <p id="signupOtpErrorMsg" class="text-xs text-red-400 font-bold hidden"></p>
+        <button id="otpSubmitBtn" type="submit" class="w-full py-3.5 rounded-full bg-white hover:bg-hbGold text-black font-extrabold text-base tracking-wide transition shadow-lg">
+          ยืนยันรหัส OTP
+        </button>
+      </form>
+
+      <div class="pt-1">
+        <button
+          type="button"
+          onclick="resendRealEmailOtp()"
+          class="text-xs text-gray-400 hover:text-hbGold underline transition"
+        >
+          ไม่ได้รับอีเมล? คลิกเพื่อส่งรหัส OTP อีกครั้ง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- สคริปต์ทางการของ Google Identity Services สำหรับปุ่ม Google Login จริง -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- หน้าต่างให้ดาวและเขียนรีวิวสินค้า (Star Rating Review Modal) -->
+  <div id="reviewStarModal" class="fixed inset-0 z-[70] hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-md bg-zinc-900 border border-white/20 rounded-3xl p-6 sm:p-7 shadow-2xl text-white space-y-4">
+      <button type="button" onclick="closeModal('reviewStarModal')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-hbOrange flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div>
+        <span class="px-3 py-0.5 rounded-full bg-hbOrange/20 text-hbOrange text-xs font-bold">REVIEW PRODUCT</span>
+        <h3 class="text-xl font-extrabold text-white mt-1">ให้คะแนนและรีวิวสินค้า</h3>
+        <p id="revModalItemTitle" class="text-xs text-hbGold font-semibold mt-0.5 truncate"></p>
+      </div>
+
+      <form onsubmit="submitStarReviewModal(event)" class="space-y-4">
+        <div class="text-center py-2 bg-black/40 rounded-2xl border border-white/10">
+          <p class="text-xs text-gray-300 mb-2">คลิกเลือกจำนวนดาวความพึงพอใจ:</p>
+          <div class="flex justify-center items-center gap-2 text-3xl">
+            <button type="button" onclick="selectReviewStars(1)" id="revStarBtn1" class="text-hbGold hover:scale-110 transition">★</button>
+            <button type="button" onclick="selectReviewStars(2)" id="revStarBtn2" class="text-hbGold hover:scale-110 transition">★</button>
+            <button type="button" onclick="selectReviewStars(3)" id="revStarBtn3" class="text-hbGold hover:scale-110 transition">★</button>
+            <button type="button" onclick="selectReviewStars(4)" id="revStarBtn4" class="text-hbGold hover:scale-110 transition">★</button>
+            <button type="button" onclick="selectReviewStars(5)" id="revStarBtn5" class="text-hbGold hover:scale-110 transition">★</button>
+          </div>
+          <p id="revStarLabelText" class="text-xs font-bold text-emerald-400 mt-1.5">5 ดาว (ประทับใจมาก)</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-300 mb-1.5">ความคิดเห็นของคุณ:</label>
+          <textarea
+            id="revModalCommentInput"
+            rows="3"
+            required
+            placeholder="เขียนรีวิวเกี่ยวกับม้าหรือสินค้าที่คุณได้รับ..."
+            class="w-full bg-black border border-white/30 rounded-2xl p-3 text-xs sm:text-sm text-white focus:outline-none focus:border-hbGold"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-2xl bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-sm sm:text-base transition shadow-lg">
+          ส่งรีวิวสินค้า
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ไลบรารี html2canvas สำหรับแปลงใบเสร็จรับเงินเป็นไฟล์รูปภาพ .png ลงเครื่อง -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- หน้าต่างขอยกเลิกคำสั่งซื้อและขอคืนเงิน (ใช้ได้เฉพาะก่อนสถานะกำลังขนส่ง) -->
+  <div id="cancelRefundModal" class="fixed inset-0 z-[75] hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-md bg-zinc-900 border border-white/20 rounded-3xl p-6 sm:p-7 shadow-2xl text-white space-y-4">
+      <button type="button" onclick="closeModal('cancelRefundModal')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-hbOrange flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div>
+        <span class="px-3 py-0.5 rounded-full bg-red-600/20 text-red-400 text-xs font-bold">CANCEL & REFUND</span>
+        <h3 class="text-xl font-extrabold text-white mt-1">ขอยกเลิกคำสั่งซื้อและขอคืนเงิน</h3>
+        <p id="cancelModalOrderNoText" class="text-xs text-hbGold font-bold mt-0.5"></p>
+      </div>
+
+      <form onsubmit="submitCancelRefundRequest(event)" class="space-y-3.5 text-xs sm:text-sm">
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">สาเหตุที่ต้องการยกเลิกคำสั่งซื้อ <span class="text-red-500">*</span></label>
+          <select id="cancelReasonSelect" class="w-full bg-black border border-white/30 rounded-2xl py-2.5 px-3 text-white focus:outline-none focus:border-hbGold">
+            <option value="ต้องการเปลี่ยนสายพันธุ์ม้า / เปลี่ยนรายการสินค้า">ต้องการเปลี่ยนสายพันธุ์ม้า / เปลี่ยนรายการสินค้า</option>
+            <option value="ต้องการเปลี่ยนวิธีขนส่ง / เปลี่ยนที่อยู่จัดส่ง">ต้องการเปลี่ยนวิธีขนส่ง / เปลี่ยนที่อยู่จัดส่ง</option>
+            <option value="สั่งซื้อซ้ำ / กดทำรายการผิดพลาด">สั่งซื้อซ้ำ / กดทำรายการผิดพลาด</option>
+            <option value="ไม่สะดวกรับสินค้าในช่วงเวลานี้">ไม่สะดวกรับสินค้าในเวลานี้</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">ข้อมูลบัญชีสำหรับรับเงินคืน (ธนาคาร / เลขบัญชี / ชื่อบัญชี) <span class="text-red-500">*</span></label>
+          <textarea
+            id="cancelRefundBankInput"
+            rows="3"
+            required
+            placeholder="เช่น กสิกรไทย 012-3-45678-9 ชื่อบัญชี นายคาวบอย ฮอร์สบัดดี้ (หรือเบอร์พร้อมเพย์)"
+            class="w-full bg-black border border-white/30 rounded-2xl p-3 text-white focus:outline-none focus:border-hbGold"
+          ></textarea>
+        </div>
+
+        <p class="text-[11px] text-gray-400 leading-relaxed">
+          *หมายเหตุ: สามารถขอยกเลิกและขอคืนเงินได้เฉพาะคำสั่งซื้อที่ยังไม่เข้าสู่สถานะ <strong>"กำลังขนส่ง"</strong> เท่านั้น โดยแอดมินหลังบ้านจะตรวจสอบและโอนเงินคืนให้ท่านโดยเร็วที่สุด
+        </p>
+
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <button type="button" onclick="closeModal('cancelRefundModal')" class="py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition">
+            ปิดหน้าต่าง
+          </button>
+          <button type="submit" class="py-2.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-extrabold transition shadow-lg">
+            ยืนยันขอยกเลิก/คืนเงิน
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== หน้าต่างลืมรหัสผ่าน (ขอ OTP ทาง Gmail และตั้งรหัสผ่านใหม่ด้วยตัวเอง) ==================== -->
+  <div id="forgotSupportModal" class="fixed inset-0 z-[75] hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-md bg-black border-2 border-white/20 rounded-[36px] p-7 sm:p-8 shadow-2xl text-white">
+      <button
+        type="button"
+        onclick="closeModal('forgotSupportModal')"
+        class="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-800 hover:bg-hbOrange text-white flex items-center justify-center transition"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="text-center mb-5">
+        <span class="px-3 py-1 rounded-full bg-hbOrange/20 text-hbGold text-xs font-extrabold tracking-wider">RESET PASSWORD</span>
+        <h3 class="text-2xl font-extrabold text-white mt-2">ลืมรหัสผ่าน / ตั้งรหัสผ่านใหม่</h3>
+        <p class="text-xs text-gray-400 mt-1">ยืนยันตัวตนด้วยรหัส OTP 6 หลักทาง Gmail เพื่อตั้งรหัสผ่านใหม่ด้วยตัวเอง</p>
+      </div>
+
+      <!-- ขั้นที่ 1: กรอก Gmail หรือ Username เพื่อรับรหัส OTP -->
+      <form id="forgotStep1Form" onsubmit="requestForgotPasswordOtp(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-extrabold text-gray-200 mb-1.5 tracking-wide">GMAIL หรือ USERNAME ของคุณ</label>
+          <input
+            id="forgotIdentifierInput"
+            type="text"
+            required
+            placeholder="กรอก Gmail หรือชื่อผู้ใช้งานที่ลงทะเบียนไว้..."
+            class="w-full bg-black border-2 border-white rounded-full py-3 px-5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-hbGold"
+          />
+        </div>
+
+        <p id="forgotStep1Error" class="text-xs text-red-400 font-bold text-center hidden"></p>
+
+        <button
+          id="forgotSendOtpBtn"
+          type="submit"
+          class="w-full py-3.5 rounded-full bg-white hover:bg-hbGold text-black font-extrabold text-sm sm:text-base tracking-wide transition shadow-lg"
+        >
+          ส่งรหัส OTP 6 หลักไปยัง Gmail
+        </button>
+      </form>
+
+      <!-- ขั้นที่ 2: กรอกรหัส OTP 6 หลัก และตั้งรหัสผ่านใหม่ (8 ตัวขึ้นไป) -->
+      <form id="forgotStep2Form" onsubmit="confirmForgotPasswordReset(event)" class="hidden space-y-4">
+        <div class="bg-zinc-900 border border-white/15 rounded-2xl p-3 text-center">
+          <p class="text-xs text-gray-300">ส่งรหัส OTP 6 หลักไปที่อีเมล:</p>
+          <p id="forgotTargetEmailLabel" class="text-sm font-extrabold text-hbGold mt-0.5"></p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-extrabold text-gray-200 mb-1 tracking-wide">รหัส OTP 6 หลัก (จากใน Gmail)</label>
+          <input
+            id="forgotOtpCodeInput"
+            type="text"
+            maxlength="6"
+            required
+            placeholder="000000"
+            class="w-full bg-zinc-900 border-2 border-white rounded-full py-2.5 px-5 text-center tracking-[0.45em] text-lg font-extrabold text-white focus:outline-none focus:border-hbGold"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-extrabold text-gray-200 mb-1">NEW PASSWORD (8+ ตัว)</label>
+            <input
+              id="forgotNewPassInput"
+              type="password"
+              required
+              minlength="8"
+              placeholder="อย่างน้อย 8 ตัวอักษร"
+              class="w-full bg-black border-2 border-white rounded-full py-2.5 px-4 text-xs sm:text-sm text-white focus:outline-none focus:border-hbGold"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-gray-200 mb-1">CONFIRM PASSWORD</label>
+            <input
+              id="forgotConfirmPassInput"
+              type="password"
+              required
+              minlength="8"
+              placeholder="ยืนยันรหัสผ่านใหม่"
+              class="w-full bg-black border-2 border-white rounded-full py-2.5 px-4 text-xs sm:text-sm text-white focus:outline-none focus:border-hbGold"
+            />
+          </div>
+        </div>
+
+        <p id="forgotStep2Error" class="text-xs text-red-400 font-bold text-center hidden"></p>
+
+        <div class="flex gap-3 pt-1">
+          <button
+            type="button"
+            onclick="backToForgotStep1()"
+            class="w-1/3 py-3 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs sm:text-sm transition"
+          >
+            ย้อนกลับ
+          </button>
+          <button
+            type="submit"
+            class="w-2/3 py-3 rounded-full bg-hbOrange hover:bg-hbOrangeHover text-white font-extrabold text-xs sm:text-sm transition shadow-lg"
+          >
+            ยืนยันเปลี่ยนรหัสผ่านใหม่
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== หน้าต่างติดต่อแอดมิน (LINE) ==================== -->
+  <div id="lineContactModal" class="fixed inset-0 z-[80] hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-sm bg-black border-2 border-green-500/40 rounded-[36px] p-7 sm:p-8 shadow-2xl text-center text-white">
+      <button
+        type="button"
+        onclick="closeModal('lineContactModal')"
+        class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 hover:bg-green-500 text-white flex items-center justify-center transition"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="w-16 h-16 rounded-full bg-green-500/20 border border-green-500 text-green-500 flex items-center justify-center mx-auto text-4xl mb-4">
+        <i class="fa-brands fa-line"></i>
+      </div>
+      <h3 class="text-2xl font-extrabold text-white">ติดต่อแอดมิน</h3>
+      <p class="text-xs sm:text-sm text-gray-400 mt-1.5 leading-relaxed">สแกน QR Code หรือคลิกปุ่มด้านล่าง<br>เพื่อแชทกับเราผ่าน LINE Official</p>
+
+      <!-- กล่องใส่รูป QR Code (แก้ไขชื่อไฟล์ตรง src="ใส่ชื่อไฟล์รูปคิวอาร์โค้ด.jpg") -->
+      <div class="mt-6 bg-white p-3 rounded-3xl mx-auto w-48 h-48 flex items-center justify-center shadow-inner">
+        <img
+          src="qr_code_line.jpg"
+          alt="LINE QR Code"
+          class="w-full h-full object-contain"
+          onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg'"
+        />
+      </div>
+
+      <div class="mt-6">
+        <!-- ใส่ลิงก์ LINE ของคุณตรง href="..." -->
+        <a
+          href="https://line.me/ti/p/~your_line_id"
+          target="_blank"
+          class="block w-full py-3.5 rounded-full bg-green-500 hover:bg-green-400 text-black font-extrabold text-sm sm:text-base tracking-wide transition shadow-lg shadow-green-500/20"
+        >
+          <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> เพิ่มเพื่อนทาง LINE
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="uma.js"></script>
+</body>
+</html>

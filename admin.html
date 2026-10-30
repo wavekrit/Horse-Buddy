@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HORSE BUDDY - ADMIN PANEL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="ีCuma.css" />
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+      background-color: #1c1c1c;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+    /* ล็อกตำแหน่งแถบเมนูด้านขวาให้ชิดขวาเสมอ ไม่กางเต็มจอ */
+    #admRightSidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 20rem;
+      height: 100vh;
+      z-index: 40;
+      background: linear-gradient(180deg, rgba(145, 118, 102, 0.94) 0%, rgba(126, 105, 92, 0.98) 100%);
+      backdrop-filter: blur(12px);
+      transition: transform 0.3s ease-in-out;
+    }
+    #admRightSidebar.sidebar-closed {
+      transform: translateX(100%);
+    }
+    #admRightSidebar.sidebar-open {
+      transform: translateX(0%);
+    }
+    .admin-pill-active {
+      background: linear-gradient(90deg, #EA580C 0%, #991B1B 100%);
+    }
+    .plus-gradient-text {
+      background: linear-gradient(90deg, #F97316 0%, #991B1B 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-orange-red {
+      background: linear-gradient(90deg, #F97316 0%, #991B1B 100%);
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="min-h-screen relative select-none">
+
+  <!-- ==================== แถบด้านบนสุด (Navbar แอดมิน) ==================== -->
+  <header class="fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-4 pointer-events-none">
+    <!-- โลโก้ HORSE BUDDY ด้านซ้าย (เชื่อมกับไฟล์ Cuma.css) -->
+    <div onclick="switchAdminSection('home')" class="hb-logo-wrapper cursor-pointer pointer-events-auto select-none">
+      <div class="hb-logo-link group">
+        <div class="hb-logo-text-box">
+          <span class="hb-logo-title group-hover:text-amber-400 transition">HORSE</span>
+          <span class="hb-logo-subtitle group-hover:text-orange-500 transition">BUDDY</span>
+        </div>
+        <div class="hb-logo-img-box">
+          <img src="img/icon/hoser icon.png" onerror="this.style.display='none'" alt="Logo" class="hb-logo-img" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ด้านขวาบน: กระดิ่งแจ้งเตือน + ชื่อแอดมิน HI ADMIN โกชิป + รูปโปรไฟล์ -->
+    <div class="flex items-center gap-4 pointer-events-auto">
+      <button onclick="toggleAdminBellModal()" class="relative p-2 hover:scale-110 transition focus:outline-none" title="การแจ้งเตือนแอดมิน">
+        <i class="fa-solid fa-bell text-3xl text-[#F59E0B] drop-shadow"></i>
+        <span id="admBellBadge" class="hidden absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[11px] font-extrabold flex items-center justify-center">
+          0
+        </span>
+      </button>
+
+      <span id="admTopDisplayName" class="font-extrabold text-sm sm:text-base tracking-wide uppercase">
+        HI ADMIN โกชิป
+      </span>
+
+      <div class="relative">
+        <img
+          id="admTopAvatar"
+          src="https://api.dicebear.com/7.x/adventurer/svg?seed=Gochip"
+          onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Gochip'"
+          alt="Admin Avatar"
+          onclick="openAdminProfileModal()"
+          title="คลิกเพื่อเปิดโปรไฟล์แอดมิน"
+          class="w-12 h-12 rounded-full object-cover border-2 border-amber-300 bg-amber-100 cursor-pointer hover:scale-105 transition"
+        />
+        <span class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-zinc-900 pointer-events-none"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== ปุ่มลูกศรเปิด/ปิดแถบเมนูด้านขวา และ Sidebar ==================== -->
+  <button
+    id="admSidebarToggleBtn"
+    onclick="toggleAdminRightSidebar()"
+    style="right: 0px;"
+    class="fixed top-24 z-50 w-14 h-12 bg-[#A98E7E]/90 hover:bg-[#917666] text-white flex items-center justify-center shadow-xl transition-all duration-300"
+    title="เปิด/ปิดแถบเมนูจัดการ"
+  >
+    <i id="admSidebarArrowIcon" class="fa-solid fa-play rotate-180 text-2xl"></i>
+  </button>
+
+  <aside
+    id="admRightSidebar"
+    class="sidebar-closed shadow-2xl pt-28 px-7 flex flex-col justify-between"
+  >
+    <nav class="space-y-4 text-left font-extrabold text-lg text-white">
+      <div class="border-b-2 border-white pb-2">
+        <button id="navBtn_sales" onclick="switchAdminSection('sales')" class="adm-nav-btn w-full text-left hover:text-[#FACC15] transition">
+          รายงานยอดขาย
+        </button>
+      </div>
+
+      <div class="border-b-2 border-white pb-2">
+        <button id="navBtn_products" onclick="switchAdminSection('products')" class="adm-nav-btn w-full text-left hover:text-[#FACC15] transition">
+          จัดการสินค้า
+        </button>
+      </div>
+
+      <div class="border-b-2 border-white pb-2 flex items-center justify-between">
+        <button id="navBtn_orders" onclick="switchAdminSection('orders')" class="adm-nav-btn text-left hover:text-[#FACC15] transition">
+          อนุมัติสินค้าและติดตามสินค้า
+        </button>
+        <span id="badgeDotOrders" class="hidden w-4 h-4 rounded-full bg-red-600 shrink-0 shadow"></span>
+      </div>
+
+      <div class="border-b-2 border-white pb-2 flex items-center justify-between">
+        <button id="navBtn_support" onclick="switchAdminSection('support')" class="adm-nav-btn text-left hover:text-[#FACC15] transition">
+          คำร้องและบัญชีผู้ใช้งาน
+        </button>
+        <span id="badgeDotSupport" class="hidden w-4 h-4 rounded-full bg-red-600 shrink-0 shadow"></span>
+      </div>
+
+      <div class="border-b-2 border-white pb-2">
+        <button id="navBtn_settings" onclick="switchAdminSection('settings')" class="adm-nav-btn w-full text-left hover:text-[#FACC15] transition">
+          ตั้งค่าระบบฟาร์ม
+        </button>
+      </div>
+
+      <div class="border-b-2 border-white pb-2">
+        <button id="navBtn_admins" onclick="switchAdminSection('admins')" class="adm-nav-btn w-full text-left hover:text-[#FACC15] transition">
+          เพิ่มแอดมิน
+        </button>
+      </div>
+
+      <div class="border-b-2 border-white pb-2 flex items-center justify-between">
+        <button id="navBtn_reviews" onclick="switchAdminSection('reviews')" class="adm-nav-btn text-left hover:text-[#FACC15] transition">
+          คำสั่งซื้อและรีวิว
+        </button>
+        <span id="badgeDotReviews" class="hidden w-4 h-4 rounded-full bg-red-600 shrink-0 shadow"></span>
+      </div>
+    </nav>
+
+    <div class="pb-6 space-y-2">
+      <a href="/" class="block w-full py-2.5 rounded-full bg-black/40 hover:bg-black/70 text-center text-xs font-bold text-amber-300 border border-white/20 transition">
+        <i class="fa-solid fa-store mr-1.5"></i> ไปยังหน้าเว็บผู้ใช้งาน
+      </a>
+    </div>
+  </aside>
+
+  <!-- ==================== หน้าต่างกระดิ่งแจ้งเตือนแอดมิน ==================== -->
+  <div id="adminBellModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="relative w-full max-w-lg bg-zinc-900 border-2 border-amber-500/50 rounded-3xl p-6 shadow-2xl text-white max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-white/15 pb-3">
+        <h3 class="text-xl font-extrabold text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-bell"></i> ศูนย์การแจ้งเตือนแอดมิน
+        </h3>
+        <button onclick="toggleAdminBellModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-orange-600 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 my-3 bg-black/50 p-1.5 rounded-full border border-white/10">
+        <button id="bellTabOrders" onclick="switchAdminBellTab('order')" class="py-2 rounded-full text-xs sm:text-sm font-extrabold admin-pill-active text-white transition">
+          ออเดอร์ที่สั่งเข้ามา
+        </button>
+        <button id="bellTabIssues" onclick="switchAdminBellTab('issue')" class="py-2 rounded-full text-xs sm:text-sm font-extrabold text-gray-300 hover:text-white transition">
+          แจ้งเตือนปัญหา (คำร้อง)
+        </button>
+      </div>
+
+      <div id="admBellListContainer" class="flex-1 overflow-y-auto space-y-2.5 pr-1 py-2"></div>
+    </div>
+  </div>
+
+  <!-- ==================== เนื้อหาหลักของแอดมิน (Main Content) ==================== -->
+  <main class="min-h-screen">
+
+    <!-- 0. หน้าแรกแอดมิน: HAVE A GOOOD DAY COWBOY -->
+    <section id="admSectionHome" class="min-h-screen flex flex-col justify-between bg-black">
+      <div class="relative h-[62vh] w-full overflow-hidden">
+        <img
+          src="img/icon/Pi7_Gif.gif"
+          alt="Admin Hero"
+          class="w-full h-full object-cover object-center brightness-75 contrast-125"
+        />
+        <div class="absolute inset-0 bg-gradient-to-b from-red-900/30 via-transparent to-black"></div>
+      </div>
+
+      <div class="flex-1 flex flex-col items-center justify-center text-center pb-14 px-4 bg-black">
+        <h2 class="text-2xl sm:text-4xl font-extrabold tracking-[0.18em] text-white uppercase">
+          HAVE A GOOOD DAY
+        </h2>
+        <h1 class="text-5xl sm:text-7xl font-extrabold tracking-[0.12em] text-white mt-2 uppercase">
+          COWBOY
+        </h1>
+      </div>
+    </section>
+
+    <!-- ==================== 1. หน้าสรุปยอดขาย (3 สไลด์) ==================== -->
+    <section id="admSectionSales" class="hidden min-h-screen pt-28 pb-12 px-6 sm:px-12 max-w-7xl mx-auto flex flex-col justify-between">
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">สรุปยอดขาย</h2>
+          <div class="flex flex-wrap items-center gap-5 text-sm sm:text-base font-semibold">
+            <label onclick="setSalesFilter('horse')" class="flex items-center gap-2 cursor-pointer">
+              <span id="chkBoxHorse" class="w-3.5 h-3.5 bg-white inline-block border border-white"></span>
+              <span class="underline">ม้า</span>
+            </label>
+            <label onclick="setSalesFilter('other')" class="flex items-center gap-2 cursor-pointer">
+              <span id="chkBoxOther" class="w-3.5 h-3.5 bg-white inline-block border border-white"></span>
+              <span class="underline">สินค้าทั่วไป</span>
+            </label>
+            <label onclick="setSalesFilter('all')" class="flex items-center gap-2 cursor-pointer">
+              <span id="chkBoxAll" class="w-3.5 h-3.5 bg-emerald-500 inline-block border border-white"></span>
+              <span class="underline">ทั้งหมด</span>
+            </label>
+          </div>
+          <p class="text-sm sm:text-base text-gray-200 mt-2 flex items-center gap-2">
+            <span>📅</span> <span id="salesCurrentDateText">ข้อมูลประจำวันที่ 26/10/2569</span>
+          </p>
+        </div>
+
+        <div class="border-2 border-orange-500 rounded-full p-1 flex items-center bg-black/40">
+          <button id="periodBtnDaily" onclick="setSalesPeriod('daily')" class="px-6 py-2 rounded-full font-extrabold text-sm sm:text-base admin-pill-active text-white transition">
+            รายวัน
+          </button>
+          <button id="periodBtnMonthly" onclick="setSalesPeriod('monthly')" class="px-6 py-2 rounded-full font-extrabold text-sm sm:text-base text-white hover:text-orange-400 transition">
+            รายเดือน
+          </button>
+          <button id="periodBtnYearly" onclick="setSalesPeriod('yearly')" class="px-6 py-2 rounded-full font-extrabold text-sm sm:text-base text-white hover:text-orange-400 transition">
+            รายปี
+          </button>
+        </div>
+      </div>
+
+      <div id="salesWheelArea" class="flex-1 flex items-center">
+        <!-- สไลด์ที่ 1: การ์ดสรุป 4 กล่อง -->
+        <div id="salesSlide0" class="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-[#F4F5F7] text-zinc-900 rounded-[28px] p-7 shadow-xl flex items-center justify-between h-52">
+            <div>
+              <p class="text-[#8B3A0E] font-bold text-xl sm:text-2xl mb-4">ยอดขายรวม</p>
+              <p id="cardTotalRevenue" class="text-4xl sm:text-5xl font-extrabold text-black">฿38,450</p>
+            </div>
+            <div class="w-16 h-16 rounded-full bg-sky-500 text-white flex items-center justify-center text-3xl shadow">
+              <i class="fa-solid fa-wallet"></i>
+            </div>
+          </div>
+
+          <div class="bg-[#F4F5F7] text-zinc-900 rounded-[28px] p-7 shadow-xl flex items-center justify-between h-52">
+            <div>
+              <p class="text-[#8B3A0E] font-bold text-xl sm:text-2xl mb-4">จำนวนสินค้าที่ขาย</p>
+              <p id="cardTotalQty" class="text-4xl sm:text-5xl font-extrabold text-black">69 ชิ้น</p>
+            </div>
+            <div class="text-5xl text-amber-500">
+              <i class="fa-solid fa-box-open"></i>
+            </div>
+          </div>
+
+          <div class="bg-[#F4F5F7] text-zinc-900 rounded-[28px] p-7 shadow-xl flex items-center justify-between h-52">
+            <div>
+              <p class="text-[#8B3A0E] font-bold text-xl sm:text-2xl mb-4">ค่าประกัน</p>
+              <p id="cardTotalInsurance" class="text-4xl sm:text-5xl font-extrabold text-black">฿0</p>
+            </div>
+            <div class="text-5xl text-orange-600">
+              <i class="fa-solid fa-clipboard-check"></i>
+            </div>
+          </div>
+
+          <div class="bg-[#F4F5F7] text-zinc-900 rounded-[28px] p-7 shadow-xl flex items-center justify-between h-52">
+            <div>
+              <p class="text-[#8B3A0E] font-bold text-xl sm:text-2xl mb-4">การเปลี่ยนแปลงยอดขาย</p>
+              <p id="cardGrowthPercent" class="text-4xl sm:text-5xl font-extrabold text-emerald-600">+8.6%</p>
+            </div>
+            <div class="text-5xl text-emerald-600">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- สไลด์ที่ 2: กราฟวงกลม & กราฟเส้น -->
+        <div id="salesSlide1" class="hidden w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-[#F4F5F7] text-zinc-900 rounded-[28px] p-6 shadow-xl h-[420px] flex flex-col justify-between">
+            <h3 class="text-[#8B3A0E] font-bold text-xl sm:text-2xl">สัดส่วนยอดขายสินค้า</h3>
+            <div class="relative h-72 w-full flex items-center justify-center">
+              <canvas id="salesPieCanvas"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-[#F4F5F7] text-zinc-900 rounded-[28px] p-6 shadow-xl h-[420px] flex flex-col justify-between">
+            <h3 class="text-[#8B3A0E] font-bold text-xl sm:text-2xl">แนวโน้มรายได้</h3>
+            <div class="relative h-72 w-full flex items-center justify-center">
+              <canvas id="salesLineCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- สไลด์ที่ 3: ตารางคำสั่งซื้อ + ปุ่มบันทึก CSV -->
+        <div id="salesSlide2" class="hidden w-full">
+          <div class="bg-[#F4F5F7] text-zinc-900 rounded-[28px] p-6 sm:p-8 shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[#8B3A0E] font-bold text-xl sm:text-2xl">รายงานรายละเอียดคำสั่งซื้อ</h3>
+              <button
+                onclick="exportSalesTableToCSV()"
+                class="px-5 py-1.5 rounded-full btn-orange-red hover:opacity-90 text-white font-extrabold text-sm shadow transition"
+              >
+                บันทึก
+              </button>
+            </div>
+
+            <div class="max-h-72 overflow-y-auto border-2 border-black">
+              <table class="w-full border-collapse text-xs sm:text-sm text-black">
+                <thead class="bg-gray-200 sticky top-0">
+                  <tr>
+                    <th class="border-2 border-black p-2.5 text-center">หมายเลขออเดอร์</th>
+                    <th class="border-2 border-black p-2.5 text-center">วัน/เดือน/ปี/เวลา</th>
+                    <th class="border-2 border-black p-2.5 text-center">ชื่อลูกค้า</th>
+                    <th class="border-2 border-black p-2.5 text-center">รายละเอียดที่อยู่</th>
+                    <th class="border-2 border-black p-2.5 text-center">สินค้า(ทั้งหมด)</th>
+                    <th class="border-2 border-black p-2.5 text-center">ราคาสุทธิ</th>
+                  </tr>
+                </thead>
+                <tbody id="salesOrderTableBody"></tbody>
+                <tfoot>
+                  <tr class="font-extrabold text-base sm:text-lg bg-gray-100">
+                    <td colspan="5" class="border-2 border-black p-3 text-center">รายได้รวมทั้งสิ้น</td>
+                    <td id="salesTableFooterSum" class="border-2 border-black p-3 text-center">฿0</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-center items-center gap-3 mt-6">
+        <button id="salesDot0" onclick="goToSalesSlide(0)" class="w-3.5 h-3.5 rounded-full bg-amber-500"></button>
+        <button id="salesDot1" onclick="goToSalesSlide(1)" class="w-3.5 h-3.5 rounded-full bg-amber-900/70"></button>
+        <button id="salesDot2" onclick="goToSalesSlide(2)" class="w-3.5 h-3.5 rounded-full bg-amber-900/70"></button>
+      </div>
+    </section>
+
+    <!-- ==================== 2. หน้าจัดการสินค้า ==================== -->
+    <section id="admSectionProducts" class="hidden min-h-screen pt-28 pb-16 px-6 sm:px-12 max-w-7xl mx-auto space-y-12">
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-white">จัดการสินค้า</h2>
+
+      <div>
+        <h3 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-white mb-5 uppercase">RACING HORSE</h3>
+        <div id="admGridRacing" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+
+      <div>
+        <h3 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-white mb-5 uppercase">SHOW HORSE</h3>
+        <div id="admGridShow" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+
+      <div>
+        <h3 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-amber-400 mb-5 uppercase">อาหารสัตว์ (HORSE FEED)</h3>
+        <div id="admGridFeed" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+
+      <div>
+        <h3 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-amber-400 mb-5 uppercase">อุปกรณ์เสริมสำหรับม้า (HORSE ACCESSORIES)</h3>
+        <div id="admGridEquipment" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. หน้าอนุมัติสินค้าและติดตามสินค้า ==================== -->
+    <!-- ==================== 3. หน้าอนุมัติสินค้าและติดตามสินค้า (+ จัดการคำขอยกเลิก/คืนเงิน) ==================== -->
+    <section id="admSectionOrders" class="hidden min-h-screen pt-28 pb-16 px-6 sm:px-12 max-w-7xl mx-auto space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white">อนุมัติสินค้าและติดตามสินค้า</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">ตรวจสอบสลิปเพื่ออนุมัติคำสั่งซื้อ อัปเดตสถานะขนส่ง และจัดการคำขอยกเลิก/ขอคืนเงินจากลูกค้า</p>
+        </div>
+
+        <!-- ปุ่มสลับหน้า 3 แท็บ: รออนุมัติ / ติดตามสินค้า / คำขอยกเลิกและคืนเงิน -->
+        <div class="border-2 border-orange-500 rounded-full p-1 flex flex-wrap items-center bg-black/50">
+          <button
+            id="ordTabBtnPending"
+            onclick="switchAdminOrderTab('pending')"
+            class="px-4 py-2 rounded-full font-extrabold text-xs sm:text-sm admin-pill-active text-white transition"
+          >
+            1. รออนุมัติ (<span id="ordPendingCountText">0</span>)
+          </button>
+          <button
+            id="ordTabBtnTracking"
+            onclick="switchAdminOrderTab('tracking')"
+            class="px-4 py-2 rounded-full font-extrabold text-xs sm:text-sm text-white hover:text-amber-300 transition"
+          >
+            2. ติดตามสินค้า (<span id="ordTrackingCountText">0</span>)
+          </button>
+          <button
+            id="ordTabBtnCancel"
+            onclick="switchAdminOrderTab('cancel')"
+            class="px-4 py-2 rounded-full font-extrabold text-xs sm:text-sm text-white hover:text-red-300 transition"
+          >
+            3. ขอยกเลิก/คืนเงิน (<span id="ordCancelCountText">0</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- แท็บที่ 1: รายการรออนุมัติ -->
+      <div id="admOrdersPendingContainer" class="space-y-4"></div>
+
+      <!-- แท็บที่ 2: รายการติดตามสินค้า (อนุมัติแล้ว) -->
+      <div id="admOrdersTrackingContainer" class="hidden space-y-4"></div>
+
+      <!-- แท็บที่ 3: รายการลูกค้าขอยกเลิกและขอคืนเงิน -->
+      <div id="admOrdersCancelContainer" class="hidden space-y-4"></div>
+    </section>
+
+    <!-- ==================== 4. หน้าคำร้องและบัญชีผู้ใช้งาน ==================== -->
+    <section id="admSectionSupport" class="hidden min-h-screen pt-28 pb-16 px-6 sm:px-12 max-w-7xl mx-auto space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white">คำร้องและบัญชีผู้ใช้งาน</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">จัดการเรื่องร้องเรียน/ลืมรหัสผ่านที่ลูกค้าแจ้งเข้ามา และแก้ไขข้อมูลบัญชีผู้ใช้งานในระบบ</p>
+        </div>
+
+        <div class="border-2 border-orange-500 rounded-full p-1 flex items-center bg-black/50">
+          <button
+            id="supTabBtnRequests"
+            onclick="switchAdminSupportTab('requests')"
+            class="px-5 py-2 rounded-full font-extrabold text-xs sm:text-sm admin-pill-active text-white transition"
+          >
+            เรื่องร้องเรียน/คำร้องลูกค้า
+          </button>
+          <button
+            id="supTabBtnUsers"
+            onclick="switchAdminSupportTab('users')"
+            class="px-5 py-2 rounded-full font-extrabold text-xs sm:text-sm text-white hover:text-amber-300 transition"
+          >
+            จัดการบัญชีผู้ใช้งานทั้งหมด
+          </button>
+        </div>
+      </div>
+
+      <!-- แท็บคำร้องเรียนจากลูกค้า -->
+      <div id="admSupportRequestsContainer" class="space-y-3"></div>
+
+      <!-- แท็บจัดการบัญชีผู้ใช้งาน -->
+      <div id="admUsersManageContainer" class="hidden space-y-4"></div>
+    </section>
+
+    <!-- ==================== 5. หน้าตั้งค่าระบบฟาร์ม ==================== -->
+    <section id="admSectionSettings" class="hidden min-h-screen pt-28 pb-16 px-6 sm:px-12 max-w-5xl mx-auto space-y-6">
+      <div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">ตั้งค่าระบบฟาร์มและเรทขนส่ง</h2>
+        <p class="text-xs sm:text-sm text-gray-400 mt-1">เปลี่ยนพิกัดฟาร์มตั้งต้นเพื่อคำนวณระยะทางใหม่ และปรับเรทค่าขนส่งทางบก/ทางอากาศโดยไม่ต้องแก้โค้ด</p>
+      </div>
+
+      <form onsubmit="saveAdminFarmSettings(event)" class="space-y-6">
+          <!-- 1. พิกัดฟาร์มตั้งต้น (ปักหมุดแผนที่ขอบทอง + ดึงชื่อจังหวัด/อำเภอ/ตำบลอัตโนมัติ) -->
+        <div class="bg-zinc-900 border border-white/15 rounded-3xl p-6 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-lg font-extrabold text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-location-dot"></i> 1. พิกัดฟาร์มตั้งต้น (สำหรับคำนวณระยะทางจัดส่ง)
+            </h3>
+            <button
+              type="button"
+              onclick="useCurrentLocationForAdminFarm()"
+              class="px-4 py-1.5 rounded-full bg-orange-600 hover:bg-orange-500 text-white text-xs font-extrabold transition shadow-md flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-crosshairs"></i> ใช้ตำแหน่งปัจจุบัน
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 mb-1.5">ชื่อสาขา/จังหวัดที่ตั้งฟาร์ม/อำเภอ/ตำบล</label>
+            <input
+              id="setFarmName"
+              type="text"
+              required
+              placeholder="คลิกปักหมุดบนแผนที่ หรือกดใช้ตำแหน่งปัจจุบันเพื่อดึงชื่อสถานที่..."
+              class="w-full bg-black border border-white/25 rounded-2xl py-2.5 px-4 text-sm text-white font-bold focus:outline-none focus:border-amber-400"
+            />
+            <!-- ซ่อนค่าละติจูดและลองจิจูดไว้เบื้องหลังเพื่อใช้คำนวณระยะทางโดยไม่รกหน้าจอ -->
+            <input id="setFarmLat" type="hidden" value="16.4419" />
+            <input id="setFarmLng" type="hidden" value="102.8360" />
+          </div>
+
+          <!-- แผนที่ขอบสีทองสำหรับแอดมินคลิกหรือลากหมุดตั้งพิกัดฟาร์ม -->
+          <div class="space-y-1.5">
+            <p class="text-xs text-gray-400">คลิกบนแผนที่หรือลากหมุดเพื่อกำหนดตำแหน่งที่ตั้งฟาร์ม:</p>
+            <div id="adminFarmOriginMap" class="w-full h-64 rounded-2xl border-2 border-[#FACC15] overflow-hidden z-10 shadow-lg"></div>
+          </div>
+        </div>
+
+        <!-- กล่องที่ 2: เรทขนส่งทางบก (รถขนส่งม้า HB) -->
+        <div class="bg-zinc-900 border border-white/15 rounded-3xl p-6 space-y-4 shadow-xl">
+          <h3 class="text-lg font-extrabold text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-truck-moving"></i> 2. เรทค่าขนส่งทางบก (จัดส่งโดยรถขนส่งม้า HB)
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-xs sm:text-sm">
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">ค่ารถตั้งต้น (บาท)</label>
+              <input id="setLandBase" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">ค่าระยะทาง (บาท/กม.)</label>
+              <input id="setLandPerKm" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">คอกรวม 3 ตัว (บาท)</label>
+              <input id="setLandShared" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">แยกคอก 1 ตัว (บาท)</label>
+              <input id="setLandSingle" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">คอก VIP เหมา (บาท)</label>
+              <input id="setLandVip" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+          </div>
+        </div>
+
+        <!-- กล่องที่ 3: เรทขนส่งทางอากาศ (Air Horse One) และพัสดุทั่วไป -->
+        <div class="bg-zinc-900 border border-white/15 rounded-3xl p-6 space-y-4 shadow-xl">
+          <h3 class="text-lg font-extrabold text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-plane-departure"></i> 3. เรทค่าขนส่งทางอากาศ (Air Horse One) & พัสดุอาหารม้า
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-xs sm:text-sm">
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">ค่าเครื่องบินตั้งต้น</label>
+              <input id="setAirBase" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">ระยะทางอากาศ (฿/กม.)</label>
+              <input id="setAirPerKm" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">คอกรวมบนเครื่อง</label>
+              <input id="setAirShared" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">แยกคอกบนเครื่อง</label>
+              <input id="setAirSingle" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">VIP เหมาลำ</label>
+              <input id="setAirVip" type="number" required class="w-full bg-black/60 border border-white/20 rounded-xl py-2.5 px-3 text-white font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold text-emerald-400 mb-1">ค่าส่งอาหาร/อุปกรณ์</label>
+              <input id="setParcelFee" type="number" required class="w-full bg-black/60 border border-emerald-500/40 rounded-xl py-2.5 px-3 text-emerald-300 font-bold" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" class="px-8 py-3 rounded-full btn-orange-red hover:opacity-95 text-white font-extrabold text-sm sm:text-base shadow-xl transition">
+            <i class="fa-solid fa-floppy-disk mr-1.5"></i> บันทึกการตั้งค่าระบบฟาร์ม
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ==================== 6. หน้าเพิ่มแอดมินและกำหนดสิทธิ์ ==================== -->
+    <section id="admSectionAdmins" class="hidden min-h-screen pt-28 pb-16 px-6 sm:px-12 max-w-6xl mx-auto space-y-8">
+      <div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">เพิ่มแอดมินและกำหนดขอบเขตงาน</h2>
+        <p class="text-xs sm:text-sm text-gray-400 mt-1">สร้างรหัสแอดมินคนอื่นๆ และกำหนดสิทธิ์ว่าแอดมินแต่ละคนสามารถเข้าถึงเมนูใดได้บ้าง</p>
+      </div>
+
+      <!-- ฟอร์มเพิ่มแอดมินใหม่ -->
+      <form onsubmit="handleAddNewAdmin(event)" class="bg-zinc-900 border border-white/15 rounded-3xl p-6 space-y-4 shadow-xl">
+        <h3 class="text-lg font-extrabold text-amber-400"><i class="fa-solid fa-user-shield mr-1.5"></i> เพิ่มบัญชีแอดมินใหม่</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs sm:text-sm">
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">USERNAME (สำหรับล็อกอิน)</label>
+            <input id="newAdmUser" type="text" required placeholder="เช่น admin_staff1" class="w-full bg-black/60 border border-white/20 rounded-xl py-2 px-3 text-white font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">PASSWORD</label>
+            <input id="newAdmPass" type="text" required placeholder="กำหนดรหัสผ่าน" class="w-full bg-black/60 border border-white/20 rounded-xl py-2 px-3 text-white font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">ชื่อเรียกแอดมิน (Display Name)</label>
+            <input id="newAdmDisplay" type="text" required placeholder="เช่น แอดมินฝ่ายจัดส่ง" class="w-full bg-black/60 border border-white/20 rounded-xl py-2 px-3 text-white font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">อีเมลรับรหัส OTP</label>
+            <input id="newAdmEmail" type="email" placeholder="staff@gmail.com" class="w-full bg-black/60 border border-white/20 rounded-xl py-2 px-3 text-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs sm:text-sm font-bold text-amber-300 mb-2">กำหนดขอบเขตเมนูที่อนุญาตให้เข้าถึง:</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs sm:text-sm bg-black/40 p-3.5 rounded-2xl border border-white/10">
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="admPermChk" value="sales" checked class="accent-orange-500 w-4 h-4" /> <span>รายงานยอดขาย</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="admPermChk" value="products" checked class="accent-orange-500 w-4 h-4" /> <span>จัดการสินค้า</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="admPermChk" value="orders" checked class="accent-orange-500 w-4 h-4" /> <span>อนุมัติ/ติดตามสินค้า</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="admPermChk" value="support" checked class="accent-orange-500 w-4 h-4" /> <span>คำร้อง/บัญชีผู้ใช้</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="admPermChk" value="settings" class="accent-orange-500 w-4 h-4" /> <span>ตั้งค่าระบบฟาร์ม</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="admPermChk" value="admins" class="accent-orange-500 w-4 h-4" /> <span>เพิ่มแอดมิน</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="admPermChk" value="reviews" checked class="accent-orange-500 w-4 h-4" /> <span>คำสั่งซื้อและรีวิว</span></label>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" class="px-7 py-2.5 rounded-full btn-orange-red hover:opacity-95 text-white font-extrabold text-sm shadow-lg transition">
+            <i class="fa-solid fa-plus mr-1"></i> สร้างบัญชีแอดมิน
+          </button>
+        </div>
+      </form>
+
+      <!-- รายชื่อแอดมินทั้งหมดในระบบ -->
+      <div class="space-y-3">
+        <h3 class="text-lg font-extrabold text-white">รายชื่อแอดมินทั้งหมดในระบบ</h3>
+        <div id="admAdminsListContainer" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- ==================== 7. หน้าคำสั่งซื้อและรีวิว ==================== -->
+    <section id="admSectionReviews" class="hidden min-h-screen pt-28 pb-16 px-6 sm:px-12 max-w-6xl mx-auto space-y-6">
+      <div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">คำสั่งซื้อและจัดการรีวิว</h2>
+        <p class="text-xs sm:text-sm text-gray-400 mt-1">ตรวจสอบรีวิวทั้งหมดที่ลูกค้าประเมินเข้ามา สามารถกด "ซ่อน" หรือ "ลบ" รีวิวที่ไม่เหมาะสมไม่ให้แสดงบนหน้าเว็บผู้ใช้งานได้ทันที</p>
+      </div>
+
+      <div id="admReviewsListContainer" class="space-y-3"></div>
+    </section>
+
+  <!-- ==================== หน้าต่างป๊อปอัป เพิ่ม/แก้ไขข้อมูลม้าและสินค้า ==================== -->
+  <div id="admProductModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="relative w-full max-w-4xl bg-[#343438] border border-white/20 rounded-[28px] p-6 sm:p-8 shadow-2xl text-white my-8">
+      <button onclick="closeAdminProductModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 hover:bg-orange-600 flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-7 items-start">
+        <!-- ด้านซ้าย: รูปภาพหลัก + รูปย่อย 4 ช่อง -->
+        <div class="md:col-span-5 space-y-4">
+          <div
+            onclick="triggerAdminImageUpload(0)"
+            class="w-full aspect-square bg-white rounded-[28px] border-[5px] border-black flex items-center justify-center overflow-hidden cursor-pointer relative group"
+            title="คลิกเพื่ออัปโหลดภาพหลัก"
+          >
+            <img id="admMainImgPreview" src="" alt="Main Preview" class="hidden w-full h-full object-cover" />
+            <span id="admMainPlusIcon" class="text-8xl font-extrabold plus-gradient-text">+</span>
+          </div>
+
+          <div id="admSubImagesRow" class="grid grid-cols-4 gap-2.5">
+            <div onclick="triggerAdminImageUpload(0)" class="aspect-square bg-white rounded-2xl border-4 border-black flex items-center justify-center overflow-hidden cursor-pointer">
+              <img id="admThumb0" src="" class="hidden w-full h-full object-cover" />
+              <span id="admThumbPlus0" class="text-3xl font-extrabold plus-gradient-text">+</span>
+            </div>
+            <div onclick="triggerAdminImageUpload(1)" class="aspect-square bg-white rounded-2xl border-4 border-black flex items-center justify-center overflow-hidden cursor-pointer">
+              <img id="admThumb1" src="" class="hidden w-full h-full object-cover" />
+              <span id="admThumbPlus1" class="text-3xl font-extrabold plus-gradient-text">+</span>
+            </div>
+            <div onclick="triggerAdminImageUpload(2)" class="aspect-square bg-white rounded-2xl border-4 border-black flex items-center justify-center overflow-hidden cursor-pointer">
+              <img id="admThumb2" src="" class="hidden w-full h-full object-cover" />
+              <span id="admThumbPlus2" class="text-3xl font-extrabold plus-gradient-text">+</span>
+            </div>
+            <div onclick="triggerAdminImageUpload(3)" class="aspect-square bg-white rounded-2xl border-4 border-black flex items-center justify-center overflow-hidden cursor-pointer">
+              <img id="admThumb3" src="" class="hidden w-full h-full object-cover" />
+              <span id="admThumbPlus3" class="text-3xl font-extrabold plus-gradient-text">+</span>
+            </div>
+          </div>
+
+          <input id="admImageFileInput" type="file" accept="image/*" multiple class="hidden" onchange="handleAdminImagesSelected(event)" />
+
+          <div id="admUploadBtnRow" class="flex items-center gap-3">
+            <button
+              type="button"
+              onclick="triggerAdminImageUpload(0)"
+              class="px-6 py-2 rounded-full btn-orange-red hover:opacity-90 text-white font-extrabold text-sm shadow-lg transition"
+            >
+              อัพโหลดรูป
+            </button>
+            <span class="text-[11px] text-gray-300">*รูปแรกที่อัปโหลดจะเป็นภาพหลัก</span>
+          </div>
+        </div>
+
+        <!-- ด้านขวา: ฟอร์มกรอกข้อมูล -->
+        <div class="md:col-span-7 space-y-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <label id="admTitleLabel" class="text-2xl sm:text-3xl font-extrabold text-white shrink-0">ชื่อสายพันธุ์</label>
+            <input
+              id="admBreedInput"
+              type="text"
+              class="flex-1 bg-[#18181B] rounded-2xl py-2.5 px-4 text-base font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <label class="text-2xl sm:text-3xl font-extrabold text-white shrink-0">ราคา</label>
+            <input
+              id="admPriceInput"
+              type="text"
+              class="w-56 bg-[#18181B] rounded-2xl py-2.5 px-4 text-base font-bold text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+
+          <!-- ส่วนเฉพาะม้า: พ่อพันธุ์ / แม่พันธุ์ -->
+          <div id="admHorseVariantsArea" class="space-y-3 pt-1">
+            <div class="flex flex-wrap items-center gap-5">
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  id="btnTabSire"
+                  onclick="switchHorseGenderTab('sire')"
+                  class="px-3 py-1 rounded-xl font-bold text-base sm:text-lg bg-amber-500 text-black transition"
+                >
+                  พ่อพันธุ์
+                </button>
+                <div class="flex items-center bg-[#18181B] rounded-full px-3 py-1 gap-2">
+                  <button type="button" onclick="stepVariantStock('sire', -1)" class="text-gray-300 hover:text-white font-bold">-</button>
+                  <input
+                    id="admSireStockInput"
+                    type="text"
+                    inputmode="numeric"
+                    value="1"
+                    oninput="enforceDigitsOnly(this, 'sire')"
+                    class="w-10 bg-transparent text-center font-bold text-sm text-white focus:outline-none"
+                  />
+                  <button type="button" onclick="stepVariantStock('sire', 1)" class="text-gray-300 hover:text-white font-bold">+</button>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  id="btnTabDam"
+                  onclick="switchHorseGenderTab('dam')"
+                  class="px-3 py-1 rounded-xl font-bold text-base sm:text-lg text-white hover:bg-white/10 transition"
+                >
+                  แม่พันธุ์
+                </button>
+                <div class="flex items-center bg-[#18181B] rounded-full px-3 py-1 gap-2">
+                  <button type="button" onclick="stepVariantStock('dam', -1)" class="text-gray-300 hover:text-white font-bold">-</button>
+                  <input
+                    id="admDamStockInput"
+                    type="text"
+                    inputmode="numeric"
+                    value="1"
+                    oninput="enforceDigitsOnly(this, 'dam')"
+                    class="w-10 bg-transparent text-center font-bold text-sm text-white focus:outline-none"
+                  />
+                  <button type="button" onclick="stepVariantStock('dam', 1)" class="text-gray-300 hover:text-white font-bold">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+              <div class="sm:col-span-6 flex items-center gap-2">
+                <label class="text-sm font-bold shrink-0">ชื่อม้า</label>
+                <input
+                  id="admVariantHorseName"
+                  type="text"
+                  oninput="syncCurrentGenderDraft()"
+                  placeholder="ชื่อม้าประจำเพศนี้"
+                  class="w-full bg-[#18181B] py-1.5 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-400"
+                />
+              </div>
+              <div class="sm:col-span-4 flex items-center gap-2">
+                <label class="text-sm font-bold shrink-0">อายุ</label>
+                <input
+                  id="admVariantAge"
+                  type="text"
+                  oninput="syncCurrentGenderDraft()"
+                  placeholder="เช่น 4 ปี"
+                  class="w-full bg-[#18181B] py-1.5 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-400"
+                />
+              </div>
+              <div class="sm:col-span-2 text-right">
+                <button
+                  type="button"
+                  onclick="saveCurrentGenderDraftWithToast()"
+                  class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-[11px] font-bold text-white shadow"
+                >
+                  พักบันทึก
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ส่วนเฉพาะสินค้าที่ไม่ใช่ม้า: จำนวน + ลักษณะนาม -->
+          <div id="admGeneralStockArea" class="hidden flex flex-wrap items-center gap-6 pt-1">
+            <div class="flex items-center gap-3">
+              <label class="text-lg sm:text-xl font-bold text-white">จำนวน</label>
+              <div class="flex items-center bg-[#18181B] rounded-full px-3.5 py-1.5 gap-2">
+                <button type="button" onclick="stepGeneralStock(-1)" class="text-base font-bold text-gray-300 hover:text-white">-</button>
+                <input
+                  id="admGeneralStockInput"
+                  type="text"
+                  inputmode="numeric"
+                  value="1"
+                  oninput="this.value = this.value.replace(/[^0-9]/g, '') || '0'"
+                  class="w-12 bg-transparent text-center font-bold text-base text-white focus:outline-none"
+                />
+                <button type="button" onclick="stepGeneralStock(1)" class="text-base font-bold text-gray-300 hover:text-white">+</button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <label class="text-lg sm:text-xl font-bold text-white">ลักษณะนาม</label>
+              <input
+                id="admGeneralUnitInput"
+                type="text"
+                value="ชิ้น"
+                placeholder="เช่น ชิ้น, ก้อน, กระสอบ"
+                class="w-28 bg-[#18181B] rounded-full py-1.5 px-4 text-center font-bold text-base text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+            </div>
+          </div>
+
+          <div class="bg-[#18181B] rounded-2xl p-4">
+            <label id="admDescLabel" class="block text-xs sm:text-sm font-bold text-[#FACC15] mb-1.5">
+              คำอธิบายและลักษณะพิเศษสายพันธุ์
+            </label>
+            <textarea
+              id="admDescInput"
+              rows="5"
+              class="w-full bg-transparent text-xs sm:text-sm text-white focus:outline-none resize-none"
+            ></textarea>
+          </div>
+
+          <div id="admVaccineArea" class="bg-[#18181B] rounded-2xl p-4">
+            <label class="block text-xs sm:text-sm font-bold text-[#FACC15] mb-1.5">ประวัติการฉีดวัคซีน</label>
+            <textarea
+              id="admVaccineInput"
+              rows="3"
+              class="w-full bg-transparent text-xs sm:text-sm text-white focus:outline-none resize-none"
+            ></textarea>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              id="admDeleteItemBtn"
+              onclick="deleteCurrentAdminItem()"
+              class="hidden px-6 py-2.5 rounded-full bg-red-700 hover:bg-red-600 text-white font-extrabold text-sm shadow transition"
+            >
+              <i class="fa-solid fa-trash mr-1"></i> ลบสินค้านี้
+            </button>
+            <button
+              type="button"
+              onclick="saveAdminProductModal()"
+              class="px-8 py-2.5 rounded-full btn-orange-red hover:opacity-95 text-white font-extrabold text-sm sm:text-base shadow-xl transition"
+            >
+              <i class="fa-solid fa-floppy-disk mr-1.5"></i> บันทึกข้อมูลสินค้า
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== หน้าต่างโปรไฟล์แอดมิน ==================== -->
+  <div id="admProfileModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-lg bg-[#161616] border border-white/15 rounded-[28px] p-6 sm:p-8 shadow-2xl text-white">
+      <button onclick="closeAdminProfileModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-orange-600 flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center gap-5 pb-6 border-b border-white/15">
+        <div class="relative shrink-0">
+          <img
+            id="admProfileModalAvatar"
+            src="https://api.dicebear.com/7.x/adventurer/svg?seed=Gochip"
+            onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Gochip'"
+            alt="Admin Avatar"
+            class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-[3px] border-[#D4AF37] bg-white shadow-md"
+          />
+          <input id="admAvatarFileInput" type="file" accept="image/*" class="hidden" onchange="handleAdminAvatarChange(event)" />
+        </div>
+
+        <div>
+          <h3 class="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center gap-2">
+            <span class="text-[#FACC15]">ADMIN</span>
+            <span class="text-[#EA580C]">:</span>
+            <span id="admProfileModalName" class="text-white">โกชิป</span>
+          </h3>
+          <button
+            type="button"
+            onclick="triggerAdminAvatarUpload()"
+            class="mt-2.5 px-4 py-1 rounded-full bg-[#EA580C] hover:bg-orange-500 text-white text-xs sm:text-sm font-extrabold transition shadow"
+          >
+            แก้ไขรูปโปรไฟล์
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-6">
+        <button
+          type="button"
+          onclick="handleAdminLogout()"
+          class="w-full py-3.5 rounded-full bg-[#3B1818] hover:bg-red-900/80 text-red-200 border border-red-800/60 text-sm sm:text-base font-extrabold transition flex items-center justify-center gap-2 shadow-inner"
+        >
+          <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

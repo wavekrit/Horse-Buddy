@@ -1,0 +1,317 @@
+{
+  "adminLineUrl": "https://line.me/ti/p/~horsebuddy_admin",
+  "standardVaccines": [
+    "วัคซีนไข้หวัดม้า (Equine Influenza): ฉีดกระตุ้นทุกๆ 6 เดือน (หรือตามกติกาการแข่งขันของ FEI คือต้องฉีดไม่เกิน 6 เดือน + 21 วันก่อนเข้าพื้นที่แข่งขัน)",
+    "วัคซีนโรคบาดทะยัก (Tetanus): ฉีดกระตุ้นทุกๆ 1 ปี (หรือตามคำแนะนำของสัตวแพทย์ในบางโปรแกรมอาจเว้นระยะทุก 1-2 ปี)",
+    "วัคซีนโรคเยื่อหุ้มสมองอักเสบ (JE - Japanese Encephalitis): ฉีดกระตุ้นทุกๆ 1 ปี",
+    "วัคซีนโรคพิษสุนัขบ้า (Rabies): ฉีดกระตุ้นทุกๆ 1 ปี (ปีละครั้ง)"
+  ],
+  "horsesData": [
+    {
+      "id": "h-racing-1",
+      "category": "racing",
+      "breed": "AMERICAN QUARTER HORSE",
+      "priceRange": "52,000 - 1,225,000 ฿",
+      "rating": 5.0,
+      "reviewCount": 54,
+      "images": [
+        "img/maR/American Quarter Horse.jpg",
+        "img/AQ/AQH.jpg",
+        "img/AQ/Everything-You-Should-Know-About-the-Quarter-Horse-Breed.jpg",
+        "img/AQ/AQ.jpg"
+      ],
+      "description": "ม้าสายพันธุ์อเมริกันควอเตอร์ กล้ามเนื้อแน่นแข็งแรง ออกตัวเร็วที่สุดในระยะสั้น นิสัยเชื่อง ฉลาด เหมาะทั้งการแข่งขันความเร็วและขี่สไตล์คาวบอย",
+      "reviews": [
+        { "user": "คุณภาคิน", "comment": "ม้าแข็งแรงมาก วิ่งออกตัวดีเยี่ยม เอกสารวัคซีนครบถ้วนครับ", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "Blaze Dakota (เบลซ ดาโกต้า)", "age": "5 ปี", "price": 890000, "stock": 2, "health": "สมบูรณ์แข็งแรง 100%" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "Amber Wind (แอมเบอร์ วินด์)", "age": "4 ปี", "price": 650000, "stock": 3, "health": "สมบูรณ์แข็งแรง ระบบสืบพันธุ์ดีเยี่ยม" }
+      }
+    },
+    {
+      "id": "h-racing-2",
+      "category": "racing",
+      "breed": "ORLOV TROTTER",
+      "priceRange": "52,000 - 700,000 ฿",
+      "rating": 4.8,
+      "reviewCount": 38,
+      "images": [
+        "img/maR/Orlov Trotter.jpg",
+        "img/ov/ov.jpg",
+        "img/ov/ov1.jpg",
+        "img/ov/ov2.jpg"
+      ],
+      "description": "สายพันธุ์ม้าวิ่งเหยาะชื่อดัง สีขาวสง่างาม มีความอึดทนทานสูง ก้าวขายาวและจังหวะการวิ่งมั่นคงเป็นเอกลักษณ์",
+      "reviews": [
+        { "user": "คุณกิตติ", "comment": "สีขาวสวยสะดุดตามาก วิ่งจังหวะนุ่มนวล", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "Silver Storm (ซิลเวอร์ สตอร์ม)", "age": "6 ปี", "price": 680000, "stock": 1, "health": "สมบูรณ์แข็งแรง 100%" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "Snow Queen (สโนว์ ควีน)", "age": "5 ปี", "price": 520000, "stock": 2, "health": "สมบูรณ์แข็งแรง 100%" }
+      }
+    },
+    {
+      "id": "h-racing-3",
+      "category": "racing",
+      "breed": "THOROUGHBRED",
+      "priceRange": "175,000 - 17,500,000+ ฿",
+      "rating": 5.0,
+      "reviewCount": 89,
+      "images": [
+        "img/maR/Thoroughbred.jpg",
+        "img/t/t2.jpg",
+        "img/t/ttt.jpg",
+        "img/t/tt.jpg"
+      ],
+      "description": "สุดยอดสายพันธุ์ม้าแข่งความเร็วสูงระดับโลก ปราดเปรียว ว่องไว ช่วงขายาว เหมาะสำหรับสนามแข่งขันมาตรฐานสากล",
+      "reviews": [
+        { "user": "ชมรมขี่ม้ากรุงเทพ", "comment": "สายเลือดแชมป์แท้ สุขภาพและการฉีดวัคซีนได้มาตรฐาน FEI", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "Black Kaiser (แบล็ค ไคเซอร์)", "age": "4 ปี", "price": 4500000, "stock": 1, "health": "สมบูรณ์ดีเยี่ยม พร้อมลงสนาม" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "Victoria Swift (วิคตอเรีย สวิฟต์)", "age": "6 ปี", "price": 3200000, "stock": 2, "health": "สมบูรณ์แข็งแรง ประวัติสายเลือดแชมป์" }
+      }
+    },
+    {
+      "id": "h-racing-4",
+      "category": "racing",
+      "breed": "DUTCH WARMBLOOD",
+      "priceRange": "140,000 - 3,500,000+ ฿",
+      "rating": 4.9,
+      "reviewCount": 42,
+      "images": [
+        "img/maR/Dutch Warmblood1.jpg",
+        "img/dw/dw.jpg",
+        "img/dw/dw1.jpg",
+        "img/dw/dw2.jpg"
+      ],
+      "description": "ม้ากีฬาชั้นเลิศจากเนเธอร์แลนด์ โดดเด่นทั้งการกระโดดข้ามเครื่องกีดขวางและศิลปะการบังคับม้า",
+      "reviews": [
+        { "user": "คุณอารยา", "comment": "กระโดดสวยมาก ฝึกง่ายและเชื่อฟังคำสั่งดีมากค่ะ", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "Apollo Gold (อพอลโล โกลด์)", "age": "5 ปี", "price": 1850000, "stock": 2, "health": "สมบูรณ์แข็งแรง 100%" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "Clara Belle (คลาร่า เบลล์)", "age": "7 ปี", "price": 1450000, "stock": 1, "health": "สมบูรณ์แข็งแรง 100%" }
+      }
+    },
+    {
+      "id": "h-racing-5",
+      "category": "racing",
+      "breed": "THAI HORSE",
+      "priceRange": "20,000 - 250,000 ฿",
+      "rating": 4.7,
+      "reviewCount": 61,
+      "images": [
+        "img/maR/ม้าไทยลูกผสมแข่ง.png",
+        "img/th/th1.jpg",
+        "img/th/th3.jpg",
+        "img/th/รุ้งแก้ว_คอกรุ่งรังษี.jpg"
+      ],
+      "description": "ม้าสายพันธุ์ไทย ทนทานต่อสภาพอากาศเมืองร้อน เลี้ยงง่าย แข็งแกร่ง และมีความคล่องตัวสูง",
+      "reviews": [
+        { "user": "ผู้ใหญ่บ้านสมชาย", "comment": "เลี้ยงง่าย ทนแดดทนฝน เข้ากับคนเลี้ยงเร็วมาก", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "พญาไฟ (Phaya Fai)", "age": "5 ปี", "price": 180000, "stock": 3, "health": "สมบูรณ์แข็งแรง 100%" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "แม่คำแพง (Mae Kham Phaeng)", "age": "4 ปี", "price": 125000, "stock": 4, "health": "สมบูรณ์แข็งแรง 100%" }
+      }
+    },
+    {
+      "id": "h-show-1",
+      "category": "show",
+      "breed": "FRIESIAN",
+      "priceRange": "175,000 - 3,500,000+ ฿",
+      "rating": 5.0,
+      "reviewCount": 67,
+      "images": [
+        "img/maB/Friesian.jpg",
+        "img/f/aschuehlein-horse-4214414_1920.jpg",
+        "img/f/Bibi_Pferdemarkt_Friese_nach_links.jpg",
+        "img/f/images.jpg"
+      ],
+      "description": "ม้าฟรีเชียนสีดำปลอดอันเลื่องชื่อ แผงคอและหางยาวเป็นลอนสวยงาม ท่วงท่าการยกขาสูงสง่างามดั่งม้าของอัศวินยุโรป",
+      "reviews": [
+        { "user": "คุณอัครเดช", "comment": "ตัวจริงสง่างามมาก ขนดำเงา แผงคอยาวสวยเหมือนในภาพเลยครับ", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "Midnight Magnus (มิดไนท์ แมกนัส)", "age": "5 ปี", "price": 3670000, "stock": 2, "health": "สมบูรณ์แข็งแรง 100% ขนดำเงางาม" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "Onyx Duchess (โอนิกซ์ ดัชเชส)", "age": "4 ปี", "price": 2950000, "stock": 1, "health": "สมบูรณ์แข็งแรง 100%" }
+      }
+    },
+    {
+      "id": "h-show-2",
+      "category": "show",
+      "breed": "ANDALUSIAN (PRE)",
+      "priceRange": "105,000 - 1,575,000 ฿",
+      "rating": 4.9,
+      "reviewCount": 45,
+      "images": [
+        "img/maB/Andalusian (PRE).jpg",
+        "img/pe/Pe.jpg",
+        "img/pe/pe2.jpg",
+        "img/pe/pe3.jpg"
+      ],
+      "description": "ม้าสายพันธุ์สเปนโบราณ รูปทรงสมส่วน คอโค้งสง่างาม ฉลาดและอ่อนโยน นิยมใช้ในงานแสดงโชว์ระดับสูง",
+      "reviews": [
+        { "user": "คุณณัฐพล", "comment": "น้องแสนรู้และเชื่องมาก ท่าย่างก้าวสวยจริงๆ", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "Santiago Rey (ซานติอาโก เรย์)", "age": "6 ปี", "price": 1450000, "stock": 2, "health": "สมบูรณ์แข็งแรง 100%" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "Isabella Blanca (อิซาเบลล่า บลังก้า)", "age": "5 ปี", "price": 1180000, "stock": 2, "health": "สมบูรณ์แข็งแรง 100%" }
+      }
+    },
+    {
+      "id": "h-show-3",
+      "category": "show",
+      "breed": "GYPSY VANNER",
+      "priceRange": "70,000 - 1,750,000 ฿",
+      "rating": 4.9,
+      "reviewCount": 52,
+      "images": [
+        "img/maB/Gypsy Vanner.jpg",
+        "img/gy/gy.jpg",
+        "img/gy/gy1.jpg",
+        "img/gy/gy2.jpg"
+      ],
+      "description": "ม้ายิปซีแวนเนอร์ ลวดลายขาว-ดำสุดคลาสสิก มีขนช่วงข้อเท้าพริ้วไหวสวยงาม นิสัยเป็นมิตร",
+      "reviews": [
+        { "user": "ฟาร์มเขาใหญ่", "comment": "เด็กๆ ที่บ้านชอบมาก น้องใจดีและขนข้อเท้าสวยมากครับ", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "Arthur Patch (อาร์เธอร์ แพทช์)", "age": "5 ปี", "price": 1350000, "stock": 1, "health": "สมบูรณ์แข็งแรง 100%" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "Daisy Bell (เดซี่ เบลล์)", "age": "4 ปี", "price": 980000, "stock": 2, "health": "สมบูรณ์แข็งแรง 100%" }
+      }
+    },
+    {
+      "id": "h-show-4",
+      "category": "show",
+      "breed": "HAFLINGER",
+      "priceRange": "52,000 - 630,000 ฿",
+      "rating": 4.8,
+      "reviewCount": 31,
+      "images": [
+        "img/maB/Haflinger.jpg",
+        "img/hf/hf.jpg",
+        "img/hf/hf1.jpg",
+        "img/hf/hf2.jpg"
+      ],
+      "description": "ม้าสีทองเกาลัดแผงคอสีขาวครีมจากออสเตรีย แข็งแรง อารมณ์อ่อนโยน เหมาะกับทุกวัยในครอบครัว",
+      "reviews": [
+        { "user": "คุณเมธา", "comment": "สีทองสวยสะดุดตาจริงๆ", "stars": 5 }
+      ],
+      "variants": {
+        "stallion": { "label": "พ่อพันธุ์", "horseName": "Golden Edelweiss (โกลเด้น เอเดลไวส์)", "age": "5 ปี", "price": 580000, "stock": 0, "health": "สมบูรณ์แข็งแรง 100%" },
+        "mare": { "label": "แม่พันธุ์", "horseName": "Honey Alpine (ฮันนี่ อัลไพน์)", "age": "6 ปี", "price": 490000, "stock": 1, "health": "สมบูรณ์แข็งแรง 100%" }
+      }
+    }
+  ],
+  "otherProductsData": [
+    {
+      "id": "p-feed-1",
+      "category": "feed",
+      "name": "หญ้าอัลฟัลฟ่าอัดก้อนเกรดพรีเมียม (Alfalfa Hay 25 kg)",
+      "price": 1450,
+      "stock": 25,
+      "rating": 4.9,
+      "reviewCount": 112,
+      "image": "img/oj/hay.png",
+      "description": "หญ้าอัลฟัลฟ่านำเข้า โปรตีนและแคลเซียมสูง กลิ่นหอม ไร้ฝุ่น เหมาะสำหรับม้าแข่งและม้าพ่อแม่พันธุ์",
+      "reviews": [{ "user": "คุณธเนศ", "comment": "หญ้าหอมสะอาด ม้ากินดีมากครับ", "stars": 5 }]
+    },
+    {
+      "id": "p-feed-2",
+      "category": "feed",
+      "name": "อาหารเม็ดผสมวิตามินสำหรับม้าแข่ง (Champion Pellet 30 kg)",
+      "price": 1890,
+      "stock": 15,
+      "rating": 4.8,
+      "reviewCount": 74,
+      "image": "img/oj/v-ta.png",
+      "description": "สูตรเพิ่มพลังงานและกล้ามเนื้อ ย่อยง่าย เสริมสร้างความทนทานและฟื้นฟูร่างกายหลังวิ่ง",
+      "reviews": [{ "user": "ฟาร์มโชคชัยชนะ", "comment": "ม้ามีกล้ามเนื้อสวยและขนเงางามขึ้นชัดเจน", "stars": 5 }]
+    },
+    {
+      "id": "p-feed-3",
+      "category": "feed",
+      "name": "ก้อนเกลือแร่หิมาลัยสำหรับม้าเลีย (Himalayan Salt Lick 5 kg)",
+      "price": 590,
+      "stock": 40,
+      "rating": 4.9,
+      "reviewCount": 95,
+      "image": "img/oj/salt.jpg",
+      "description": "เกลือแร่ธรรมชาติบริสุทธิ์พร้อมเชือกแขวนในคอก ช่วยเสริมแร่ธาตุที่สูญเสียไปกับเหงื่อ",
+      "reviews": [{ "user": "คุณนิดา", "comment": "ดิชันชิมแล้วอร่อยดีค่ะ ม้าฉันน่าจะชอบค่ะ", "stars": 5 }]
+    },
+    {
+      "id": "p-feed-4",
+      "category": "feed",
+      "name": "น้ำมันบำรุงขนและข้อต่อม้าสวยงาม (Omega Coat Oil 5L)",
+      "price": 2350,
+      "stock": 0,
+      "rating": 5.0,
+      "reviewCount": 49,
+      "image": "img/oj/oli.png",
+      "description": "น้ำมันสกัดเย็นอุดมด้วยโอเมก้า 3 และ 6 ช่วยให้ขนม้าเงางามเป็นประกายและบำรุงข้อต่อ",
+      "reviews": [{ "user": "คุณศิริวรรณ", "comment": "ใช้ดีมาก ขนม้านุ่มเงาสุดๆ รอของเข้าเพิ่มนะคะ", "stars": 5 }]
+    },
+    {
+      "id": "p-eq-1",
+      "category": "equipment",
+      "name": "อานม้าหนังแท้สไตล์คาวบอยตะวันตก (Western Leather Saddle)",
+      "price": 28500,
+      "stock": 5,
+      "rating": 5.0,
+      "reviewCount": 39,
+      "image": "img/oj/Western Leather Saddle.jpg",
+      "description": "งานฝีมือหนังวัวแท้แกะสลักลวดลายคาวบอย รองรับสรีระทั้งผู้ขี่และหลังม้า นั่งสบาย ทนทาน",
+      "reviews": [{ "user": "คาวบอยสระบุรี", "comment": "งานหนังสวยเนี้ยบมาก นั่งกระชับไม่เมื่อยเลย", "stars": 5 }]
+    },
+    {
+      "id": "p-eq-2",
+      "category": "equipment",
+      "name": "ชุดบังเหียนและสายจูงหนังถักขอบทอง (Gold Trim Bridle Set)",
+      "price": 4200,
+      "stock": 12,
+      "rating": 4.8,
+      "reviewCount": 51,
+      "image": "img/oj/Gold Trim Bridle Set.jpg",
+      "description": "บังเหียนหนังนิ่มพร้อมอะไหล่ทองเหลืองแท้ ไม่บาดผิวหน้าม้า ปรับขนาดได้มาตรฐาน",
+      "reviews": [{ "user": "คุณภูผา", "comment": "อะไหล่สีทองตัดกับหนังสีดำสวยหรูมาก", "stars": 5 }]
+    },
+    {
+      "id": "p-eq-3",
+      "category": "equipment",
+      "name": "เกือกม้าอัลลอยด์น้ำหนักเบาพร้อมหมุด (Pro Racing Horseshoes 4 ชิ้น)",
+      "price": 3400,
+      "stock": 18,
+      "rating": 4.9,
+      "reviewCount": 63,
+      "image": "img/oj/Pro Racing Horseshoes.jpg",
+      "description": "เกือกม้าคุณภาพสูงช่วยลดแรงกระแทกและปกป้องกีบม้า เหมาะสำหรับทั้งม้าแข่งและม้าใช้งาน",
+      "reviews": [{ "user": "ช่างเกือกม้าโคราช", "comment": "น้ำหนักเบา ได้มาตรฐาน ตีเข้ากีบง่าย", "stars": 5 }]
+    },
+    {
+      "id": "p-eq-4",
+      "category": "equipment",
+      "name": "ชุดแปรงขนและทำความสะอาดกีบม้า 8 ชิ้น (Grooming Kit Box)",
+      "price": 1950,
+      "stock": 9,
+      "rating": 4.7,
+      "reviewCount": 82,
+      "image": "img/oj/Grooming Kit Box.png",
+      "description": "ครบชุดทั้งแปรงขนอ่อน แปรงหวีแผงคอ ที่แคะกีบม้า พร้อมกล่องเก็บพกพาสะดวก",
+      "reviews": [{ "user": "คุณแพรว", "comment": "ครบจบในกล่องเดียว คุ้มราคามากค่ะ", "stars": 5 }]
+    }
+  ],
+  "registeredUsers": [
+    {
+      "username": "p'namo",
+      "email": "demo@gmail.com",
+      "phone": "0812345678",
+      "password": "password123",
+      "address": "199 หมู่ 4 ฟาร์มตะวันทอง ต.ปากช่อง อ.ปากช่อง จ.นครราชสีมา 30130",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+    }
+  ]
+}

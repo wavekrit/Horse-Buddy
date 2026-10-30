@@ -1,0 +1,251 @@
+/* ตั้งค่าพื้นฐานของหน้าเว็บ */
+body {
+  font-family: 'Prompt', sans-serif;
+  background-color: #0B0B0B;
+  color: #FFFFFF;
+  overflow-x: hidden;
+}
+
+/* แอนิเมชันข้อความต้อนรับ LOOKING FOR NEW BUDDY เลื่อนขึ้นมา */
+@keyframes riseUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-hero-title {
+  animation: riseUpFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* พื้นหลังไล่ระดับสีดำไปขาวตามการเลื่อนหน้าเว็บ */
+.page-gradient-flow {
+  background: linear-gradient(
+    180deg,
+    #000000 0%,
+    #1C1C1C 16%,
+    #3D3D3D 35%,
+    #5E5E5E 55%,
+    #C7C4BE 78%,
+    #F7F5F0 100%
+  );
+}
+
+/* ซ่อน Scrollbar แนวนอนสำหรับแถบสไลด์ม้าแข่งและม้าสวยงาม */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ลวดลายแสงและคลื่นด้านบนของ Navbar */
+.header-wave-pattern {
+  background-image:
+    radial-gradient(circle at 12% 40%, rgba(255, 255, 255, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 88% 20%, rgba(242, 107, 29, 0.08) 0%, transparent 40%);
+}
+/* ==========================================================================
+   🎛️ แผงควบคุมขนาดและระยะห่างโลโก้ (แก้ไขตัวเลข px ตรงนี้แล้วกด Ctrl+S ได้เลย)
+   ========================================================================== */
+:root {
+  --logo-img-width: 65px;        /* 1. ความกว้างของรูปโลโก้ม้า */
+  --logo-img-height: 65px;       /* 2. ความสูงของรูปโลโก้ม้า */
+  --logo-gap: -2px;              /* 3. ระยะห่างระหว่างตัวหนังสือ HORSE BUDDY กับรูปโลโก้ม้า */
+  --logo-font-size: 18px;        /* 4. ขนาดตัวหนังสือคำว่า HORSE และ BUDDY */
+  --logo-line-height: 1.15;      /* 5. ระยะห่างระหว่างบรรทัดคำว่า HORSE กับ BUDDY */
+  --logo-buddy-indent: 14px;     /* 6. ระยะเยื้องไปทางขวาของคำว่า BUDDY */
+  --logo-margin-left: 0px;       /* 7. ขยับชุดโลโก้ทั้งหมดไปทางขวา (ใส่เลขติดลบถ้าต้องการชิดซ้ายเพิ่ม) */
+  --logo-margin-top: 6px;        /* 8. ขยับชุดโลโก้ขึ้น/ลง */
+  --menu-btn-top-gap: -4px;       /* 9. ระยะห่างระหว่างโลโก้กับปุ่มขีดสามขีด (☰) ด้านล่าง */
+  --menu-btn-size: 24px;         /* 10. ขนาดไอคอนปุ่มขีดสามขีด (☰) */
+}
+
+.hb-logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  margin-left: var(--logo-margin-left);
+  margin-top: var(--logo-margin-top);
+}
+
+.hb-logo-link {
+  display: flex;
+  align-items: center;
+  gap: var(--logo-gap);
+  text-decoration: none;
+}
+
+.hb-logo-text-box {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: var(--logo-line-height);
+}
+
+.hb-logo-title {
+  font-weight: 800;
+  font-size: var(--logo-font-size);
+  letter-spacing: 0.08em;
+  color: #FFFFFF;
+}
+
+.hb-logo-subtitle {
+  font-weight: 800;
+  font-size: var(--logo-font-size);
+  letter-spacing: 0.08em;
+  color: #FFFFFF;
+  padding-left: var(--logo-buddy-indent);
+}
+
+.hb-logo-img-box {
+  width: var(--logo-img-width);
+  height: var(--logo-img-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hb-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hb-menu-btn {
+  margin-top: var(--menu-btn-top-gap);
+  font-size: var(--menu-btn-size);
+  padding: 2px 4px;
+  line-height: 1;
+}
+/* ==========================================================================
+   3. ส่วนตั้งค่าปุ่มเมนู 3 ขีด (☰) แบบใส และกล่องเมนูทางลัด (ปรับตำแหน่งตรงนี้)
+   ========================================================================== */
+.hb-menu-btn {
+  position: fixed;
+  top: 110px;               /* ระยะห่างจากด้านบนของจอ (เพิ่มเลข = เลื่อนลง, ลดเลข = เลื่อนขึ้น) */
+  left: 32px;              /* ระยะห่างจากขอบซ้ายของจอ (เพิ่มเลข = ขยับไปขวา, ลดเลข = ชิดซ้าย) */
+  z-index: 45;
+  width: 34px;             /* ความยาวของเส้นขีด 3 ขีด */
+  height: 24px;            /* ความสูงรวมของปุ่ม 3 ขีด */
+  background: transparent; /* พื้นหลังใส ไม่มีกรอบสี่เหลี่ยม */
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  cursor: pointer;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.hb-menu-btn:hover {
+  transform: scale(1.08);
+}
+
+/* เส้นขีดสีขาวแต่ละเส้นของปุ่ม 3 ขีด */
+.hb-menu-line {
+  display: block;
+  width: 100%;
+  height: 3.5px;           /* ความหนาของเส้นขีดแต่ละเส้น */
+  background-color: #ffffff;
+  border-radius: 9999px;   /* ขอบมนปลายเส้น */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+  transition: background-color 0.25s ease;
+}
+
+.hb-menu-btn:hover .hb-menu-line {
+  background-color: #facc15; /* เปลี่ยนเป็นสีทองเมื่อเอาเมาส์ชี้ */
+}
+
+/* กล่องเมนูหมวดหมู่ที่เปิดออกมาเมื่อคลิกปุ่ม 3 ขีด */
+.hb-menu-drawer {
+  position: fixed;
+  top: 122px;              /* ระยะห่างจากด้านบนของกล่องเมนู (ควรอยู่ใต้ปุ่ม 3 ขีดเล็กน้อย) */
+  left: 32px;              /* ระยะห่างจากขอบซ้ายของกล่องเมนู */
+  z-index: 45;
+  width: 270px;
+  background-color: rgba(10, 10, 12, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+/* ==========================================================================
+   4. ส่วนตั้งค่ารูปภาพพื้นหลัง/ลายน้ำในหน้าต่างโปรไฟล์ (ปรับขนาดและตำแหน่งตรงนี้)
+   ========================================================================== */
+.hb-profile-watermark-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 20px;       /* ระยะห่างจากปุ่มหรือเมนูด้านบน */
+  padding-bottom: 12px;    /* ระยะห่างจากปุ่มออกจากระบบด้านล่าง */
+  pointer-events: none;
+  user-select: none;
+}
+
+.hb-profile-watermark-img {
+  width: 240px;            /* ความกว้างของรูปภาพ (เพิ่ม-ลดตัวเลขได้ตามต้องการ) */
+  height: auto;            /* ปรับความสูงตามสัดส่วนรูปอัตโนมัติ */
+  max-height: 140px;       /* จำกัดความสูงสูงสุดไม่ให้ดันกรอบโปรไฟล์ยาวเกินไป */
+  object-fit: contain;
+  opacity: 0.25;           /* ความจางของภาพพื้นหลัง (0.1 = จางมาก, 1.0 = ชัดเต็มที่) */
+  transform: translate(0px, 0px); /* ปรับขยับ (ซ้าย/ขวา, ขึ้น/ลง) เช่น translate(10px, -5px) */
+}
+/* ==========================================================================
+   5. ปรับลดขนาดหน้าต่างรายละเอียดสินค้า (#productDetailModal) ให้กะทัดรัดพอดีจอ
+   ========================================================================== */
+#productDetailModal > div {
+  max-width: 780px !important;   /* ลดความกว้างของหน้าต่างลงให้กะทัดรัด (ปรับตัวเลขได้) */
+  max-height: 88vh !important;   /* จำกัดความสูงไม่ให้ล้นขอบจอบน-ล่าง */
+  padding: 20px 24px !important; /* ลดพื้นที่ว่างรอบกรอบ */
+  border-radius: 28px !important;
+  overflow-y: auto !important;
+}
+
+/* ย่อขนาดรูปภาพหลักด้านซ้ายให้พอดี */
+#productDetailModal img#detImage,
+#productDetailModal img#detailMainImage,
+#productDetailModal .grid > div:first-child > div:first-child img {
+  max-height: 250px !important;
+  width: 100% !important;
+  object-fit: cover !important;
+}
+
+#productDetailModal .grid > div:first-child > div:first-child {
+  height: 250px !important;
+}
+
+/* ย่อขนาดแถบรูปย่อย (Thumbnails) 4 รูปด้านล่าง */
+#productDetailModal #detThumbnails img,
+#productDetailModal #detailThumbnails img,
+#productDetailModal .grid > div:first-child .grid img {
+  height: 54px !important;
+  object-fit: cover !important;
+}
+
+/* ลดขนาดตัวอักษรชื่อสินค้าและราคาให้สมดุล */
+#productDetailModal h2,
+#productDetailModal #detTitle,
+#productDetailModal #detailTitle {
+  font-size: 1.45rem !important;
+  line-height: 1.25 !important;
+}
+
+/* ลดระยะห่างกล่องข้อความด้านขวา (พ่อพันธุ์/แม่พันธุ์, รายละเอียด, วัคซีน) */
+#productDetailModal .space-y-4 > div,
+#productDetailModal .space-y-5 > div {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
